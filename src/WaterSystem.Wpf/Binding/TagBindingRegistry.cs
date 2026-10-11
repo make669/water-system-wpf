@@ -67,21 +67,20 @@ namespace WaterSystem.Wpf.Binding
     /// <summary>
     /// XAML 用法（M3/M4 接线）：
     ///   显示类：Text="{ui:TagBinding Pump1_F}"
-    ///   控制类：&lt;controls:USwitchW ui:TagBinding.TagName="Valve1" ui:TagBinding.Kind="Control" /&gt;
-    /// ProvideValue 登记 Tag 名并返回对 VM TagValues 索引器的 OneWay 绑定（控制开关的视觉一律
-    /// OneWay 绑定 VM——回写防护层 1，迁移方案 §2.4；用户手势走命令，不走绑定）。
+    ///   控制类：&lt;controls:USwitchW Value="{ui:TagBinding Valve1, Kind=Control}" /&gt;
+    /// 继承 Binding（ProvideValue 交给基类——从普通 MarkupExtension 返回裸 Binding 对象不会自动
+    /// 应用到目标属性，首次接线时踩过）：构造即登记 Tag 名，并对 VM TagValues 索引器生成
+    /// OneWay 绑定（控制开关的视觉一律 OneWay 绑定 VM——回写防护层 1，迁移方案 §2.4；
+    /// 用户手势走命令，不走绑定）。
     /// </summary>
-    public class TagBindingExtension : MarkupExtension
+    public class TagBindingExtension : System.Windows.Data.Binding
     {
-        public string TagName { get; }
         public TagBindingKind Kind { get; set; } = TagBindingKind.Display;
 
-        public TagBindingExtension(string tagName) => TagName = tagName;
-
-        public override object ProvideValue(IServiceProvider serviceProvider)
+        public TagBindingExtension(string tagName) : base($"TagValues[{tagName}]")
         {
-            TagBindingRegistry.Register(TagName, Kind);
-            return new System.Windows.Data.Binding($"TagValues[{TagName}]") { Mode = BindingMode.OneWay };
+            Mode = BindingMode.OneWay;
+            TagBindingRegistry.Register(tagName, Kind);
         }
     }
 }

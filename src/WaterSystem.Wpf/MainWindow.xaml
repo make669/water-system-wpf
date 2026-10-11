@@ -1,6 +1,8 @@
 <Window x:Class="WaterSystem.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="clr-namespace:WaterSystem.Wpf.Binding"
+        xmlns:controls="clr-namespace:WaterSystem.Wpf.Controls"
         Title="智能水箱上位机"
         Width="1492" Height="1000"
         WindowStartupLocation="CenterScreen"
@@ -45,7 +47,28 @@
                 <StackPanel>
                     <TextBlock Text="实时数值" FontSize="13" Foreground="{DynamicResource TextSecondary}"
                                Margin="12,8,0,0" />
-                    <Grid x:Name="ParaPanel" Margin="16" />
+                    <Grid x:Name="ParaPanel" Margin="16">
+                        <WrapPanel>
+                            <controls:ParaBox Title="水位" Unit="m" Decimals="1" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding CurWaterPos}" />
+                            <controls:ParaBox Title="主管压力" Unit="MPa" Decimals="2" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding MainOutPressure}" />
+                            <controls:ParaBox Title="主管流量" Unit="m³" Decimals="1" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding MainOutFlow}" />
+                            <controls:ParaBox Title="温度" Unit="℃" Decimals="1" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding CurTemperature}" />
+                            <controls:ParaBox Title="湿度" Unit="%" Decimals="0" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding SoilHumidity}" />
+                            <controls:ParaBox Title="降水" Unit="mm" Decimals="1" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding Precipitation}" />
+                            <controls:ParaBox Title="1#频率" Unit="Hz" Decimals="0" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding Pump1_F}" />
+                            <controls:ParaBox Title="1#功率" Unit="kW" Decimals="0" Margin="0,0,24,16"
+                                              Value="{ui:TagBinding Pump1_P}" />
+                            <controls:ParaBox Title="1#转速" Unit="r/min" Decimals="0"
+                                              Value="{ui:TagBinding Pump1_S}" />
+                        </WrapPanel>
+                    </Grid>
                 </StackPanel>
             </Border>
 
