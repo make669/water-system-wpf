@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace water_system_wpf
+namespace WaterSystem.Wpf
 {
     /// <summary>
     /// Interaction logic for App.xaml
