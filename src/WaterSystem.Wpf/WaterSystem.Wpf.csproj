@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -8,5 +8,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\configFiles\TagTable.csv" Link="configFiles\TagTable.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\configFiles\AlarmConfig.json" Link="configFiles\AlarmConfig.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\configFiles\Communication.txt" Link="configFiles\Communication.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WaterSystem.Core\WaterSystem.Core.csproj" />
+  </ItemGroup>
 
 </Project>
