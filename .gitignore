@@ -1,0 +1,8 @@
+bin/
+obj/
+.vs/
+*.user
+logs/
+data/
+app_init.json
+*.db
