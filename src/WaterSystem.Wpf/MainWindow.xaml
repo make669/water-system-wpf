@@ -14,7 +14,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 顶栏（T2.3 骨架：标题 + 拖动 + 关闭；状态带 M3/M4 填充） -->
+        <!-- 顶栏（标题 + 拖动 + 关闭；状态带 M4 填充） -->
         <Grid Grid.Row="0" Background="{DynamicResource BgCard}"
               MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
@@ -31,7 +31,92 @@
                     Click="CloseButton_Click" />
         </Grid>
 
-        <!-- 主内容区（M4 分区骨架填充） -->
-        <Grid Grid.Row="1" />
+        <!-- 主内容区（M3 过渡布局：左数值区 / 右通信卡；M4 按设计稿重排） -->
+        <Grid Grid.Row="1" Margin="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="384" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左：实时数值（T3.4 ParaBox 填充） -->
+            <Border Grid.Column="0" Margin="0,0,12,0"
+                    Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
+                    BorderThickness="1" CornerRadius="8">
+                <StackPanel>
+                    <TextBlock Text="实时数值" FontSize="13" Foreground="{DynamicResource TextSecondary}"
+                               Margin="12,8,0,0" />
+                    <Grid x:Name="ParaPanel" Margin="16" />
+                </StackPanel>
+            </Border>
+
+            <!-- 右：通信控制卡（两态；T3.3） -->
+            <Border Grid.Column="1" Background="{DynamicResource BgCard}"
+                    BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+                <Grid Margin="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- 状态行（dot 随 ConnToneKey 变色，P4/P13） -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,4,0,10">
+                        <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource Off}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Ok">
+                                            <Setter Property="Fill" Value="{DynamicResource Ok}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Alarm">
+                                            <Setter Property="Fill" Value="{DynamicResource Alarm}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Accent">
+                                            <Setter Property="Fill" Value="{DynamicResource Accent}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding ConnStateText}" FontSize="14"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                    </StackPanel>
+
+                    <!-- IP / 端口（标签与输入框同行左对齐，修 P3） -->
+                    <Grid Grid.Row="1" Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="IP" VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                        <TextBox Grid.Column="1" Text="{Binding IpText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="端口" VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                        <TextBox Grid.Column="1" Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
+                    </Grid>
+
+                    <!-- 按钮行（互斥启用 + busy 态，修 P13；模拟/真机同一套命令） -->
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="{Binding SimButtonText}" Command="{Binding ToggleSimCommand}"
+                                Width="88" Height="30" Margin="0,0,8,0" />
+                        <Button Content="断开" Command="{Binding DisconnectCommand}"
+                                Width="72" Height="30" Margin="0,0,8,0" />
+                        <Button Content="连接" Command="{Binding ConnectCommand}"
+                                Width="72" Height="30" Background="{DynamicResource Accent}"
+                                Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
     </Grid>
 </Window>

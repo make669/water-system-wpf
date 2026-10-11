@@ -55,7 +55,6 @@ namespace WaterSystem.Wpf
                 comm.Port > 0 ? comm.Port : 502);
             Polling = new DataPollingService(Client, AppConstants.PollingIntervalMs);
             Polling.SetTags(Tags);
-            Polling.OnError += m => Log.Error(m);
             Control = new ControlService(Client, Tags);
             Control.OnError += m => Log.Error(m);
             AlarmEval = new AlarmService(pre.Config!);
@@ -64,7 +63,11 @@ namespace WaterSystem.Wpf
                      $"流量 ≤{cfg.MaxFlow:0.##} m³，压力 ≤{cfg.MaxPressure:0.##} Mpa，泵 {cfg.PumpCount} 台");
 
             // ⑥⑦ 主窗显示（E08/E09 于 T5.5 在 InitializeComponent 后核对）
-            var window = new MainWindow();
+            var window = new MainWindow
+            {
+                DataContext = new ViewModels.MainViewModel(
+                    Log, Client, Polling, Control, AlarmEval, Tags),
+            };
             MainWindow = window;
             window.Show();
         }

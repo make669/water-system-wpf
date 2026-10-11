@@ -94,7 +94,19 @@ namespace WaterSystem.Wpf.ViewModels
         public bool SimRunning
         {
             get => _simRunning;
-            private set { _simRunning = value; PropertyChanged?.Invoke(this, new(nameof(SimRunning))); }
+            private set
+            {
+                _simRunning = value;
+                SimButtonText = value ? "停止模拟" : "模拟";
+                PropertyChanged?.Invoke(this, new(nameof(SimRunning)));
+            }
+        }
+
+        private string _simButtonText = "模拟";
+        public string SimButtonText
+        {
+            get => _simButtonText;
+            private set { _simButtonText = value; PropertyChanged?.Invoke(this, new(nameof(SimButtonText))); }
         }
 
         #endregion
@@ -204,6 +216,7 @@ namespace WaterSystem.Wpf.ViewModels
             ConnState = state;
             ConnStateText = text;
             ConnToneKey = toneKey;
+            CommandManager.InvalidateRequerySuggested();   // 按钮互斥启用即时刷新（T3.3）
         }
 
         // ═══════════════ 状态徽章带（修 P5/P6：灯文字随状态变） ═══════════════

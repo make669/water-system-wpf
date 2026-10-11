@@ -17,4 +17,25 @@
     <SolidColorBrush x:Key="WarnText" Color="#FBBF24" />
     <SolidColorBrush x:Key="PipeIdle" Color="#3D4E6B" />
     <SolidColorBrush x:Key="PipeRun" Color="#3FB950" />
+
+    <!-- 基础控件暗色样式（T3.3 过渡版；T4.0 由 HandyControl 皮肤接管） -->
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource BgHover}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Stroke}" />
+        <Setter Property="CaretBrush" Value="{StaticResource TextPrimary}" />
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource BgHover}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Stroke}" />
+        <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource BgCard}" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
 </ResourceDictionary>
