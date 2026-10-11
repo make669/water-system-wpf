@@ -11,288 +11,131 @@
         Background="{DynamicResource BgWindow}"
         FontFamily="微软雅黑">
     <Viewbox Stretch="Uniform">
-    <Grid Width="1492" Height="1000">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="164" />
-        </Grid.RowDefinitions>
+        <!-- 设计稿画布 1492×1000（Q1=B：Viewbox 等比缩放至工作区） -->
+        <Canvas Width="1492" Height="1000">
 
-        <!-- 顶栏（标题 + 拖动 + 关闭；状态带 M4 填充） -->
-        <Grid Grid.Row="0" Background="{DynamicResource BgCard}"
-              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                <TextBlock Text="智能水箱上位机" FontSize="16" FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextPrimary}" />
-                <TextBlock Text="蓄水池 · 3 台水泵 · 阀门组监控" FontSize="11"
-                           Foreground="{DynamicResource TextSecondary}" Margin="12,3,0,0"
-                           VerticalAlignment="Center" />
-            </StackPanel>
-            <Button x:Name="CloseButton" Content="✕" Width="32" Height="32"
-                    HorizontalAlignment="Right" VerticalAlignment="Center"
-                    Margin="0,0,8,0" Background="Transparent" BorderThickness="0"
-                    Foreground="{DynamicResource TextSecondary}" FontSize="13"
-                    Click="CloseButton_Click" />
-        </Grid>
+            <!-- ═══ 顶栏状态带 (0,0,1492,40) ═══ -->
+            <Grid Canvas.Left="0" Canvas.Top="0" Width="1492" Height="40"
+                  Background="{DynamicResource BgCard}"
+                  MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                    <TextBlock Text="智能水箱上位机" FontSize="16" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimary}" />
+                    <TextBlock Text="蓄水池 · 3 台水泵 · 阀门组监控" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" Margin="12,3,0,0"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <!-- 通信 Chip（P13：状态永可见） -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="360,0,0,0">
+                    <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{DynamicResource Off}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ConnToneKey}" Value="Ok">
+                                        <Setter Property="Fill" Value="{DynamicResource Ok}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ConnToneKey}" Value="Alarm">
+                                        <Setter Property="Fill" Value="{DynamicResource Alarm}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ConnToneKey}" Value="Accent">
+                                        <Setter Property="Fill" Value="{DynamicResource Accent}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding ConnStateText}" FontSize="12"
+                               Foreground="{DynamicResource TextSecondary}" />
+                </StackPanel>
+                <!-- 未确认报警徽标（P12：AlarmCenter 计数上顶栏） -->
+                <TextBlock VerticalAlignment="Center" Margin="700,0,0,0" FontSize="12" FontWeight="SemiBold">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource Off}" />
+                            <Setter Property="Text" Value="报警 0" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasUnack}" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
+                                    <Setter Property="Text" Value="⚠ 未确认报警" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+                <TextBlock Text="{Binding ClockText}" FontSize="14"
+                           Foreground="{DynamicResource TextSecondary}"
+                           VerticalAlignment="Center" Margin="0,0,90,0"
+                           HorizontalAlignment="Right" />
+                <Button Content="✕" Width="32" Height="32" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Margin="0,0,8,0" Background="Transparent"
+                        BorderThickness="0" Foreground="{DynamicResource TextSecondary}"
+                        FontSize="13" Click="CloseButton_Click" />
+            </Grid>
 
-        <!-- 主内容区（M3 过渡布局：左数值区 / 右通信卡；下：状态徽章带；M4 按设计稿重排） -->
-        <Grid Grid.Row="1" Margin="12">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="384" />
-            </Grid.ColumnDefinitions>
-
-            <!-- 左列：实时数值+控制操作（上） / 趋势卡（下） -->
-            <Grid Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="180" />
-                </Grid.RowDefinitions>
-            <Border Grid.Row="0" Margin="0,0,12,12"
-                    Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
-                    BorderThickness="1" CornerRadius="8">
-                <StackPanel>
-                    <TextBlock Text="实时数值" FontSize="13" Foreground="{DynamicResource TextSecondary}"
-                               Margin="12,8,0,0" />
-                    <Grid x:Name="ParaPanel" Margin="16">
-                        <WrapPanel>
-                            <controls:ParaBox Title="水位" Unit="m" Decimals="1" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding CurWaterPos}" />
-                            <controls:ParaBox Title="主管压力" Unit="MPa" Decimals="2" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding MainOutPressure}" />
-                            <controls:ParaBox Title="主管流量" Unit="m³" Decimals="1" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding MainOutFlow}" />
-                            <controls:ParaBox Title="温度" Unit="℃" Decimals="1" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding CurTemperature}" />
-                            <controls:ParaBox Title="湿度" Unit="%" Decimals="0" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding SoilHumidity}" />
-                            <controls:ParaBox Title="降水" Unit="mm" Decimals="1" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding Precipitation}" />
-                            <controls:ParaBox Title="1#频率" Unit="Hz" Decimals="0" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding Pump1_F}" />
-                            <controls:ParaBox Title="1#功率" Unit="kW" Decimals="0" Margin="0,0,24,16"
-                                              Value="{ui:TagBinding Pump1_P}" />
-                            <controls:ParaBox Title="1#转速" Unit="r/min" Decimals="0"
-                                              Value="{ui:TagBinding Pump1_S}" />
-                        </WrapPanel>
-                    </Grid>
-                    <TextBlock Text="控制操作" FontSize="13" Foreground="{DynamicResource TextSecondary}"
-                               Margin="12,4,0,0" />
-                    <ItemsControl Margin="12,6,12,10" ItemsSource="{Binding ControlVm.ControlItems}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel />
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Background="{DynamicResource BgHover}" CornerRadius="6"
-                                        Padding="10,6" Margin="0,0,10,10">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,10,0" />
+            <!-- ═══ 工艺总览卡 (12,52,1078,470)——管廊布线 T4.2/水池 T4.3/泵卡 T4.4 ═══ -->
+            <controls:CardView Canvas.Left="12" Canvas.Top="52" Width="1078" Height="470" Title="工艺总览">
+                <Canvas>
+                    <!-- 水源段（细则 §4.1 过程卡内部表） -->
+                    <TextBlock Canvas.Left="16" Canvas.Top="4" Text="蓄水池" FontSize="12"
+                               Foreground="{DynamicResource TextSecondary}" />
+                    <Border Canvas.Left="16" Canvas.Top="24" Width="210" Height="150"
+                            BorderBrush="{DynamicResource Stroke}" BorderThickness="3" CornerRadius="10">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <TextBlock Text="62%" FontSize="22" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimary}"
+                                       HorizontalAlignment="Center" />
+                            <TextBlock Text="液位图 T4.3" FontSize="10"
+                                       Foreground="{DynamicResource TextSecondary}"
+                                       HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                    <controls:ParaBox Canvas.Left="16" Canvas.Top="184" Title="水位" Unit="m" Decimals="1"
+                                      Value="{ui:TagBinding CurWaterPos}" />
+                    <controls:ParaBox Canvas.Left="16" Canvas.Top="224" Title="主管压力" Unit="MPa" Decimals="2"
+                                      Value="{ui:TagBinding MainOutPressure}" />
+                    <controls:ParaBox Canvas.Left="16" Canvas.Top="264" Title="主管流量" Unit="m³" Decimals="1"
+                                      Value="{ui:TagBinding MainOutFlow}" />
+                    <StackPanel Canvas.Left="16" Canvas.Top="312" Orientation="Horizontal">
+                        <TextBlock Text="主阀门" FontSize="12" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,10,0" />
+                        <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[MainValve]}"
+                                           Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                           CommandParameter="MainValve" />
+                    </StackPanel>
+                    <!-- 管廊与泵位（T4.2 布线） -->
+                    <TextBlock Canvas.Left="340" Canvas.Top="8" Text="管廊布线 T4.2（上廊主管 / 三泵列 / 下廊汇管）"
+                               FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    <!-- 控制操作条（T4.4 将移入泵卡；此为功能过渡位） -->
+                    <Border Canvas.Left="330" Canvas.Top="352" Width="736" Height="96"
+                            Background="{DynamicResource BgHover}" CornerRadius="6" Padding="10,6">
+                        <ItemsControl ItemsSource="{Binding ControlVm.ControlItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,14,6">
+                                        <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
                                         <controls:USwitchW VerticalAlignment="Center"
                                                            SwitchState="{Binding State}"
                                                            Command="{Binding DataContext.ControlVm.ToggleCommand,
                                                                     RelativeSource={RelativeSource AncestorType=Window}}"
                                                            CommandParameter="{Binding Tag}" />
                                     </StackPanel>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Border>
-
-            <!-- 趋势卡（T7.1：水位 300 点 + 阈值红线，修 P10） -->
-            <Border Grid.Row="1" Margin="0,0,12,0" Background="{DynamicResource BgCard}"
-                    BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
-                <Grid Margin="8,4,8,6">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="趋势曲线 · 蓄水池水位（5 分钟）" FontSize="13"
-                               Foreground="{DynamicResource TextSecondary}" Margin="4,2,0,4" />
-                    <controls:WaterTrendChart Grid.Row="1"
-                                              Snapshot="{Binding TrendSnapshot}"
-                                              ThresholdLow="{Binding ThresholdLow}"
-                                              ThresholdHigh="{Binding ThresholdHigh}"
-                                              YMax="{Binding YMax}" />
-                </Grid>
-            </Border>
-            </Grid>
-
-            <!-- 右：实时报警卡（T6.2，四态） + 通信控制卡 -->
-            <Grid Grid.Column="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="300" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <!-- 实时报警卡（修 P4/P12：主视野报警面板 + 未确认计数） -->
-                <Border Grid.Row="0" Margin="0,0,0,12" Background="{DynamicResource BgCard}"
-                        BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
-                    <Grid Margin="10,6,10,8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <DockPanel Grid.Row="0" Margin="2,2,2,6">
-                            <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource Alarm}"
-                                       Text="{Binding AlarmPanel.UnackCount, StringFormat=⚠ 未确认 {0}}" />
-                            <TextBlock Text="实时报警" FontSize="13" Foreground="{DynamicResource TextSecondary}" />
-                        </DockPanel>
-                        <ListBox Grid.Row="1" x:Name="AlarmList" ItemsSource="{Binding AlarmPanel.Rows}"
-                                 SelectedItem="{Binding AlarmPanel.Selected}"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Border CornerRadius="4" Padding="6,3">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Setter Property="Background" Value="{DynamicResource BgHover}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
-                                                        <Setter Property="Background" Value="#40F87171" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
-                                                        <Setter Property="Background" Value="#40FBBF24" />
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
-                                                        <Setter Property="Background" Value="#40FB923C" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="48" />
-                                                <ColumnDefinition Width="44" />
-                                                <ColumnDefinition Width="96" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Grid.Column="0" Text="{Binding Message}" FontSize="12"
-                                                       Foreground="{DynamicResource TextPrimary}"
-                                                       ToolTip="{Binding Message}" />
-                                            <TextBlock Grid.Column="1" Text="{Binding TriggeredText}" FontSize="11"
-                                                       Foreground="{DynamicResource TextSecondary}" />
-                                            <TextBlock Grid.Column="2" Text="{Binding DurationText}" FontSize="11"
-                                                       Foreground="{DynamicResource TextSecondary}" />
-                                            <TextBlock Grid.Column="3" Text="{Binding StateText}" FontSize="11"
-                                                       FontWeight="SemiBold" TextAlignment="Right">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="{DynamicResource Off}" />
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Ack}" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
-                                                                <Setter Property="Foreground" Value="{DynamicResource Recover}" />
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                        </Grid>
-                                    </Border>
                                 </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Content="确认选中" Command="{Binding AlarmPanel.AckSelectedCommand}"
-                                    Width="88" Height="28" Margin="0,0,8,0" />
-                            <Button Content="全部确认" Command="{Binding AlarmPanel.AckAllCommand}"
-                                    Width="88" Height="28" Background="{DynamicResource Accent}"
-                                    Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Canvas>
+            </controls:CardView>
 
-                <!-- 通信控制卡（两态；T3.3） -->
-                <Border Grid.Row="1" Background="{DynamicResource BgCard}"
-                        BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
-                <Grid Margin="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-
-                    <!-- 状态行（dot 随 ConnToneKey 变色，P4/P13） -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,4,0,10">
-                        <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0">
-                            <Ellipse.Style>
-                                <Style TargetType="Ellipse">
-                                    <Setter Property="Fill" Value="{DynamicResource Off}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Ok">
-                                            <Setter Property="Fill" Value="{DynamicResource Ok}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Alarm">
-                                            <Setter Property="Fill" Value="{DynamicResource Alarm}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Accent">
-                                            <Setter Property="Fill" Value="{DynamicResource Accent}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Ellipse.Style>
-                        </Ellipse>
-                        <TextBlock Text="{Binding ConnStateText}" FontSize="14"
-                                   Foreground="{DynamicResource TextPrimary}" />
-                    </StackPanel>
-
-                    <!-- IP / 端口（标签与输入框同行左对齐，修 P3） -->
-                    <Grid Grid.Row="1" Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="52" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="IP" VerticalAlignment="Center" FontSize="12"
-                                   Foreground="{DynamicResource TextSecondary}" />
-                        <TextBox Grid.Column="1" Text="{Binding IpText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
-                    </Grid>
-                    <Grid Grid.Row="2" Margin="0,4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="52" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="端口" VerticalAlignment="Center" FontSize="12"
-                                   Foreground="{DynamicResource TextSecondary}" />
-                        <TextBox Grid.Column="1" Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
-                    </Grid>
-
-                    <!-- 按钮行（互斥启用 + busy 态，修 P13；模拟/真机同一套命令） -->
-                    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="{Binding SimButtonText}" Command="{Binding ToggleSimCommand}"
-                                Width="88" Height="30" Margin="0,0,8,0" />
-                        <Button Content="断开" Command="{Binding DisconnectCommand}"
-                                Width="72" Height="30" Margin="0,0,8,0" />
-                        <Button Content="连接" Command="{Binding ConnectCommand}"
-                                Width="72" Height="30" Background="{DynamicResource Accent}"
-                                Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
-                    </StackPanel>
-                </Grid>
-            </Border>
-            </Grid>
-
-            <!-- 状态徽章带（T3.5：7 组，文字随状态变——修 P5/P6） -->
-            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                    Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
-                    BorderThickness="1" CornerRadius="8" Padding="12,10">
+            <!-- ═══ 状态检测卡 (12,530,1078,110)——修 P5/P6 ═══ -->
+            <controls:CardView Canvas.Left="12" Canvas.Top="530" Width="1078" Height="110" Title="状态检测">
                 <ItemsControl ItemsSource="{Binding Badges}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -342,38 +185,208 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </Border>
-        </Grid>
-        <!-- 运行日志卡（T6.1：LogRowStyler 唯一出处着色；DEBUG 不进主卡，F12 窗口见全量） -->
-        <Border Grid.Row="2" Margin="12,0,12,8"
-                Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
-                BorderThickness="1" CornerRadius="8">
-            <Grid Margin="8,4,8,4">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-                <DockPanel Grid.Row="0" Margin="4,2,4,4">
-                    <TextBlock DockPanel.Dock="Right" Text="F12 全量日志" FontSize="11"
-                               Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
-                    <TextBlock Text="运行日志" FontSize="13" Foreground="{DynamicResource TextSecondary}" />
-                </DockPanel>
-                <DataGrid Grid.Row="1" x:Name="LogGrid" ItemsSource="{Binding Log.Entries}"
-                          AutoGenerateColumns="False" HeadersVisibility="Column"
-                          Background="Transparent" BorderThickness="0"
-                          RowBackground="Transparent" AlternatingRowBackground="Transparent"
-                          Foreground="{DynamicResource TextPrimary}" FontSize="12"
-                          RowHeight="22" ColumnHeaderHeight="26"
-                          EnableRowVirtualization="False" IsReadOnly="True"
-                          SelectionMode="Single" LoadingRow="LogGrid_LoadingRow">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="时间" Binding="{Binding Time, StringFormat=HH:mm:ss}" Width="100" />
-                        <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="64" />
-                        <DataGridTextColumn Header="消息" Binding="{Binding Message}" Width="*" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Border>
-    </Grid>
+            </controls:CardView>
+
+            <!-- ═══ 用水情况卡 (12,648,322,180) ═══ -->
+            <controls:CardView Canvas.Left="12" Canvas.Top="648" Width="322" Height="180" Title="用水情况">
+                <StackPanel Margin="16,10,0,0">
+                    <controls:ParaBox Title="计划" Unit="m³" Decimals="1" Margin="0,0,0,10"
+                                      Value="{ui:TagBinding PlanWaters}" />
+                    <controls:ParaBox Title="实际" Unit="m³" Decimals="1" Margin="0,0,0,10"
+                                      Value="{ui:TagBinding ActualWaters}" />
+                    <TextBlock Text="完成率环 T4.5" FontSize="11" Foreground="{DynamicResource TextSecondary}"
+                               Margin="0,6,0,0" />
+                </StackPanel>
+            </controls:CardView>
+
+            <!-- ═══ 趋势卡 (342,648,748,180)——修 P10 ═══ -->
+            <controls:CardView Canvas.Left="342" Canvas.Top="648" Width="748" Height="180" Title="趋势曲线 · 蓄水池水位（5 分钟）">
+                <controls:WaterTrendChart Snapshot="{Binding TrendSnapshot}"
+                                          ThresholdLow="{Binding ThresholdLow}"
+                                          ThresholdHigh="{Binding ThresholdHigh}"
+                                          YMax="{Binding YMax}" />
+            </controls:CardView>
+
+            <!-- ═══ 实时报警卡 (1102,52,384,330)——修 P4/P12 ═══ -->
+            <controls:CardView Canvas.Left="1102" Canvas.Top="52" Width="384" Height="330" Title="实时报警">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <DockPanel Grid.Row="0" Margin="2,2,2,6">
+                        <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource Alarm}"
+                                   Text="{Binding AlarmPanel.UnackCount, StringFormat=⚠ 未确认 {0}}" />
+                        <TextBlock Text="内容 / 触发 / 持续 / 状态（四态）" FontSize="10"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                    </DockPanel>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding AlarmPanel.Rows}"
+                             SelectedItem="{Binding AlarmPanel.Selected}"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="6,3">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource BgHover}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                    <Setter Property="Background" Value="#40F87171" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
+                                                    <Setter Property="Background" Value="#40FBBF24" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
+                                                    <Setter Property="Background" Value="#40FB923C" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="48" />
+                                            <ColumnDefinition Width="44" />
+                                            <ColumnDefinition Width="96" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Message}" FontSize="12"
+                                                   Foreground="{DynamicResource TextPrimary}"
+                                                   ToolTip="{Binding Message}" />
+                                        <TextBlock Grid.Column="1" Text="{Binding TriggeredText}" FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}" />
+                                        <TextBlock Grid.Column="2" Text="{Binding DurationText}" FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondary}" />
+                                        <TextBlock Grid.Column="3" Text="{Binding StateText}" FontSize="11"
+                                                   FontWeight="SemiBold" TextAlignment="Right">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Off}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Ack}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
+                                                            <Setter Property="Foreground" Value="{DynamicResource Recover}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="确认选中" Command="{Binding AlarmPanel.AckSelectedCommand}"
+                                Width="88" Height="28" Margin="0,0,8,0" />
+                        <Button Content="全部确认" Command="{Binding AlarmPanel.AckAllCommand}"
+                                Width="88" Height="28" Background="{DynamicResource Accent}"
+                                Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
+                    </StackPanel>
+                </Grid>
+            </controls:CardView>
+
+            <!-- ═══ 环境数据卡 (1102,390,384,250)——环形仪表 T4.5 ═══ -->
+            <controls:CardView Canvas.Left="1102" Canvas.Top="390" Width="384" Height="250" Title="环境数据">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="环形仪表 ×4（T4.5）" FontSize="12"
+                               Foreground="{DynamicResource TextSecondary}" />
+                    <TextBlock Text="量程=TagTable Min/Max（修 P7）" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0" />
+                </StackPanel>
+            </controls:CardView>
+
+            <!-- ═══ 通信控制卡 (1102,648,384,180)——两态（T3.3） ═══ -->
+            <controls:CardView Canvas.Left="1102" Canvas.Top="648" Width="384" Height="180" Title="通信控制（Modbus TCP）">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,4,0,10">
+                        <Ellipse Width="10" Height="10" VerticalAlignment="Center" Margin="0,0,8,0">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{DynamicResource Off}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Ok">
+                                            <Setter Property="Fill" Value="{DynamicResource Ok}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Alarm">
+                                            <Setter Property="Fill" Value="{DynamicResource Alarm}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnToneKey}" Value="Accent">
+                                            <Setter Property="Fill" Value="{DynamicResource Accent}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding ConnStateText}" FontSize="14"
+                                   Foreground="{DynamicResource TextPrimary}" />
+                    </StackPanel>
+                    <Grid Grid.Row="1" Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="IP" VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                        <TextBox Grid.Column="1" Text="{Binding IpText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="52" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="端口" VerticalAlignment="Center" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondary}" />
+                        <TextBox Grid.Column="1" Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}" Height="28" />
+                    </Grid>
+                    <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="{Binding SimButtonText}" Command="{Binding ToggleSimCommand}"
+                                Width="88" Height="30" Margin="0,0,8,0" />
+                        <Button Content="断开" Command="{Binding DisconnectCommand}"
+                                Width="72" Height="30" Margin="0,0,8,0" />
+                        <Button Content="连接" Command="{Binding ConnectCommand}"
+                                Width="72" Height="30" Background="{DynamicResource Accent}"
+                                Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
+                    </StackPanel>
+                </Grid>
+            </controls:CardView>
+
+            <!-- ═══ 运行日志卡 (0,836,1492,164)——T6.1 着色唯一出处 ═══ -->
+            <controls:CardView Canvas.Left="0" Canvas.Top="836" Width="1492" Height="164" Title="运行日志">
+                <Grid Margin="8,2,8,2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="F12 全量日志" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" Margin="4,0,4,2"
+                               HorizontalAlignment="Right" />
+                    <DataGrid Grid.Row="1" x:Name="LogGrid" ItemsSource="{Binding Log.Entries}"
+                              AutoGenerateColumns="False" HeadersVisibility="Column"
+                              EnableRowVirtualization="False" IsReadOnly="True"
+                              SelectionMode="Single" LoadingRow="LogGrid_LoadingRow"
+                              RowHeight="22" ColumnHeaderHeight="26">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="时间" Binding="{Binding Time, StringFormat=HH:mm:ss}" Width="100" />
+                            <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="64" />
+                            <DataGridTextColumn Header="消息" Binding="{Binding Message}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </controls:CardView>
+        </Canvas>
     </Viewbox>
 </Window>
