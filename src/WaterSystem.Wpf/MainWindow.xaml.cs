@@ -12,9 +12,25 @@ namespace WaterSystem.Wpf
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Views.LogViewerWindow? _logViewer;
+
         public MainWindow()
         {
             InitializeComponent();
+            PreviewKeyDown += (_, e) =>
+            {
+                if (e.Key == Key.F12) { OpenLogViewer(); e.Handled = true; }
+            };
+        }
+
+        /// <summary>F12 全量日志窗口（单例复用，对应源 OpenLogViewer FrmMain.cs:123-138）。</summary>
+        private void OpenLogViewer()
+        {
+            if (_logViewer == null)
+                _logViewer = new Views.LogViewerWindow(App.Log, App.AlarmCenter) { Owner = this };
+            _logViewer.Show();
+            _logViewer.Activate();
+            App.Log?.Info("日志窗口已打开");
         }
 
         /// <summary>顶栏拖动（对应源 WmNclButtonDown/DragMove 语义，D6）。</summary>
