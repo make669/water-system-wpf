@@ -13,14 +13,31 @@ namespace WaterSystem.Wpf
     public partial class MainWindow : Window
     {
         private Views.LogViewerWindow? _logViewer;
+        private const double DesignWidth = 1492, DesignHeight = 1000;
 
         public MainWindow()
         {
             InitializeComponent();
+            SourceInitialized += (_, _) => FitToWorkArea();
             PreviewKeyDown += (_, e) =>
             {
                 if (e.Key == Key.F12) { OpenLogViewer(); e.Handled = true; }
             };
+        }
+
+        /// <summary>Q1=B（Viewbox 矢量等比缩放）：窗口尺寸 = 设计稿 × min(工作区/设计稿, 1.0)。
+        /// 不放大只缩小；内容在 Viewbox 内无损等比，标题栏/关闭钮任何屏幕可达（修 P17 实锤）。</summary>
+        private void FitToWorkArea()
+        {
+            var work = SystemParameters.WorkArea;
+            (Width, Height) = SizeFor(work.Width, work.Height);
+        }
+
+        /// <summary>尺寸计算纯函数（可测）：k = min(工作区宽/1492, 工作区高/1000, 1.0)，不放大只缩小。</summary>
+        public static (double W, double H) SizeFor(double workWidth, double workHeight)
+        {
+            double k = Math.Min(Math.Min(workWidth / DesignWidth, workHeight / DesignHeight), 1.0);
+            return (Math.Round(DesignWidth * k), Math.Round(DesignHeight * k));
         }
 
         /// <summary>F12 全量日志窗口（单例复用，对应源 OpenLogViewer FrmMain.cs:123-138）。</summary>

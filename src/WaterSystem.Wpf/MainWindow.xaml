@@ -10,7 +10,8 @@
         ResizeMode="NoResize"
         Background="{DynamicResource BgWindow}"
         FontFamily="微软雅黑">
-    <Grid>
+    <Viewbox Stretch="Uniform">
+    <Grid Width="1492" Height="1000">
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition Height="*" />
@@ -374,4 +375,5 @@
             </Grid>
         </Border>
     </Grid>
+    </Viewbox>
 </Window>
