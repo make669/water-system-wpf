@@ -14,6 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="40" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="164" />
         </Grid.RowDefinitions>
 
         <!-- 顶栏（标题 + 拖动 + 关闭；状态带 M4 填充） -->
@@ -225,5 +226,35 @@
                 </ItemsControl>
             </Border>
         </Grid>
+        <!-- 运行日志卡（T6.1：LogRowStyler 唯一出处着色；DEBUG 不进主卡，F12 窗口见全量） -->
+        <Border Grid.Row="2" Margin="12,0,12,8"
+                Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
+                BorderThickness="1" CornerRadius="8">
+            <Grid Margin="8,4,8,4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <DockPanel Grid.Row="0" Margin="4,2,4,4">
+                    <TextBlock DockPanel.Dock="Right" Text="F12 全量日志" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" />
+                    <TextBlock Text="运行日志" FontSize="13" Foreground="{DynamicResource TextSecondary}" />
+                </DockPanel>
+                <DataGrid Grid.Row="1" x:Name="LogGrid" ItemsSource="{Binding Log.Entries}"
+                          AutoGenerateColumns="False" HeadersVisibility="Column"
+                          Background="Transparent" BorderThickness="0"
+                          RowBackground="Transparent" AlternatingRowBackground="Transparent"
+                          Foreground="{DynamicResource TextPrimary}" FontSize="12"
+                          RowHeight="22" ColumnHeaderHeight="26"
+                          EnableRowVirtualization="False" IsReadOnly="True"
+                          SelectionMode="Single" LoadingRow="LogGrid_LoadingRow">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="时间" Binding="{Binding Time, StringFormat=HH:mm:ss}" Width="100" />
+                        <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="64" />
+                        <DataGridTextColumn Header="消息" Binding="{Binding Message}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
