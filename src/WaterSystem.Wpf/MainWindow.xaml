@@ -33,15 +33,19 @@
                     Click="CloseButton_Click" />
         </Grid>
 
-        <!-- 主内容区（M3 过渡布局：左数值区 / 右通信卡；M4 按设计稿重排） -->
+        <!-- 主内容区（M3 过渡布局：左数值区 / 右通信卡；下：状态徽章带；M4 按设计稿重排） -->
         <Grid Grid.Row="1" Margin="12">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左：实时数值（T3.4 ParaBox 填充） -->
-            <Border Grid.Column="0" Margin="0,0,12,0"
+            <!-- 左：实时数值（T3.4） -->
+            <Border Grid.Row="0" Grid.Column="0" Margin="0,0,12,12"
                     Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
                     BorderThickness="1" CornerRadius="8">
                 <StackPanel>
@@ -73,7 +77,7 @@
             </Border>
 
             <!-- 右：通信控制卡（两态；T3.3） -->
-            <Border Grid.Column="1" Background="{DynamicResource BgCard}"
+            <Border Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Background="{DynamicResource BgCard}"
                     BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
@@ -139,6 +143,61 @@
                                 Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
                     </StackPanel>
                 </Grid>
+            </Border>
+
+            <!-- 状态徽章带（T3.5：7 组，文字随状态变——修 P5/P6） -->
+            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                    Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
+                    BorderThickness="1" CornerRadius="8" Padding="12,10">
+                <ItemsControl ItemsSource="{Binding Badges}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="7" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <Ellipse Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,8,0">
+                                        <Ellipse.Style>
+                                            <Style TargetType="Ellipse">
+                                                <Setter Property="Fill" Value="{DynamicResource Off}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Ok">
+                                                        <Setter Property="Fill" Value="{DynamicResource Ok}" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                        <Setter Property="Fill" Value="{DynamicResource Alarm}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Ellipse.Style>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextPrimary}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Word}" FontSize="12" HorizontalAlignment="Center"
+                                           Margin="0,6,0,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="{DynamicResource Off}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ToneKey}" Value="Ok">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Ok}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                    <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Border>
         </Grid>
     </Grid>
