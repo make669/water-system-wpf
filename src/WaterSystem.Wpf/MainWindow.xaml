@@ -1,12 +1,37 @@
-﻿<Window x:Class="WaterSystem.Wpf.MainWindow"
+<Window x:Class="WaterSystem.Wpf.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WaterSystem.Wpf"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="智能水箱上位机"
+        Width="1492" Height="1000"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="{DynamicResource BgWindow}"
+        FontFamily="微软雅黑">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
+        <!-- 顶栏（T2.3 骨架：标题 + 拖动 + 关闭；状态带 M3/M4 填充） -->
+        <Grid Grid.Row="0" Background="{DynamicResource BgCard}"
+              MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
+                <TextBlock Text="智能水箱上位机" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimary}" />
+                <TextBlock Text="蓄水池 · 3 台水泵 · 阀门组监控" FontSize="11"
+                           Foreground="{DynamicResource TextSecondary}" Margin="12,3,0,0"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+            <Button x:Name="CloseButton" Content="✕" Width="32" Height="32"
+                    HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Margin="0,0,8,0" Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource TextSecondary}" FontSize="13"
+                    Click="CloseButton_Click" />
+        </Grid>
+
+        <!-- 主内容区（M4 分区骨架填充） -->
+        <Grid Grid.Row="1" />
     </Grid>
 </Window>
