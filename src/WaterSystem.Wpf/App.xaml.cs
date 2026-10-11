@@ -63,14 +63,17 @@ namespace WaterSystem.Wpf
                      $"流量 ≤{cfg.MaxFlow:0.##} m³，压力 ≤{cfg.MaxPressure:0.##} Mpa，泵 {cfg.PumpCount} 台");
 
             // ⑥⑦ 主窗显示（E08/E09 于 T5.5 在 InitializeComponent 后核对）
-            var window = new MainWindow
-            {
-                DataContext = new ViewModels.MainViewModel(
-                    Log, Client, Polling, Control, AlarmEval, Tags),
-            };
+            MainVm = new ViewModels.MainViewModel(Log, Client, Polling, Control, AlarmEval, Tags);
+            var window = new MainWindow { DataContext = Main };
             MainWindow = window;
             window.Show();
+
+            // 取证/演示通道：--auto-sim 启动即进模拟模式（与【模拟】按钮同一命令路径，无专用逻辑）
+            if (e.Args.Contains("--auto-sim"))
+                Dispatcher.BeginInvoke(() => MainVm.ToggleSimCommand.Execute(null));
         }
+
+        public static ViewModels.MainViewModel? MainVm { get; private set; }
 
         private void OnDispatcherException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
