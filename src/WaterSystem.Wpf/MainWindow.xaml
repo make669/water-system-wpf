@@ -102,9 +102,101 @@
                 </StackPanel>
             </Border>
 
-            <!-- 右：通信控制卡（两态；T3.3） -->
-            <Border Grid.Row="0" Grid.Column="1" Margin="0,0,0,12" Background="{DynamicResource BgCard}"
-                    BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+            <!-- 右：实时报警卡（T6.2，四态） + 通信控制卡 -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="300" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 实时报警卡（修 P4/P12：主视野报警面板 + 未确认计数） -->
+                <Border Grid.Row="0" Margin="0,0,0,12" Background="{DynamicResource BgCard}"
+                        BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+                    <Grid Margin="10,6,10,8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <DockPanel Grid.Row="0" Margin="2,2,2,6">
+                            <TextBlock DockPanel.Dock="Right" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource Alarm}"
+                                       Text="{Binding AlarmPanel.UnackCount, StringFormat=⚠ 未确认 {0}}" />
+                            <TextBlock Text="实时报警" FontSize="13" Foreground="{DynamicResource TextSecondary}" />
+                        </DockPanel>
+                        <ListBox Grid.Row="1" x:Name="AlarmList" ItemsSource="{Binding AlarmPanel.Rows}"
+                                 SelectedItem="{Binding AlarmPanel.Selected}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border CornerRadius="4" Padding="6,3">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="Background" Value="{DynamicResource BgHover}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                        <Setter Property="Background" Value="#40F87171" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
+                                                        <Setter Property="Background" Value="#40FBBF24" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
+                                                        <Setter Property="Background" Value="#40FB923C" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="48" />
+                                                <ColumnDefinition Width="44" />
+                                                <ColumnDefinition Width="96" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Message}" FontSize="12"
+                                                       Foreground="{DynamicResource TextPrimary}"
+                                                       ToolTip="{Binding Message}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding TriggeredText}" FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                            <TextBlock Grid.Column="2" Text="{Binding DurationText}" FontSize="11"
+                                                       Foreground="{DynamicResource TextSecondary}" />
+                                            <TextBlock Grid.Column="3" Text="{Binding StateText}" FontSize="11"
+                                                       FontWeight="SemiBold" TextAlignment="Right">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="{DynamicResource Off}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Alarm">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Ack">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Ack}" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding ToneKey}" Value="Recover">
+                                                                <Setter Property="Foreground" Value="{DynamicResource Recover}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="确认选中" Command="{Binding AlarmPanel.AckSelectedCommand}"
+                                    Width="88" Height="28" Margin="0,0,8,0" />
+                            <Button Content="全部确认" Command="{Binding AlarmPanel.AckAllCommand}"
+                                    Width="88" Height="28" Background="{DynamicResource Accent}"
+                                    Foreground="{DynamicResource TextPrimary}" BorderThickness="0" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- 通信控制卡（两态；T3.3） -->
+                <Border Grid.Row="1" Background="{DynamicResource BgCard}"
+                        BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -170,6 +262,7 @@
                     </StackPanel>
                 </Grid>
             </Border>
+            </Grid>
 
             <!-- 状态徽章带（T3.5：7 组，文字随状态变——修 P5/P6） -->
             <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"

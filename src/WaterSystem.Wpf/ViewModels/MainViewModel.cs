@@ -41,6 +41,7 @@ namespace WaterSystem.Wpf.ViewModels
         private readonly DataPollingService _polling;
         private readonly ControlService _control;
         private readonly AlarmService _alarmEval;
+        private readonly AlarmCenter? _alarmCenter;
         private readonly List<TagAddress> _tags;
         private readonly Func<DateTime> _clock;
 
@@ -60,6 +61,9 @@ namespace WaterSystem.Wpf.ViewModels
 
         /// <summary>控制链路视图模型（组合根注入；开关视觉绑定经 ControlVm.SwitchStates）。</summary>
         public ControlViewModel? ControlVm { get; set; }
+
+        /// <summary>实时报警面板（AlarmCenter 非空时创建；数据源=OpenSnapshot/OnAlarmChanged）。</summary>
+        public ViewModels.AlarmPanelViewModel? AlarmPanel { get; }
 
         #region 通知属性
 
@@ -126,7 +130,7 @@ namespace WaterSystem.Wpf.ViewModels
 
         public MainViewModel(LogService log, ModbusClient client, DataPollingService polling,
             ControlService control, AlarmService alarmEval, List<TagAddress> tags,
-            bool startWatchdog = true, Func<DateTime>? clock = null)
+            bool startWatchdog = true, Func<DateTime>? clock = null, AlarmCenter? alarmCenter = null)
         {
             _log = log;
             Log = log;
@@ -134,6 +138,7 @@ namespace WaterSystem.Wpf.ViewModels
             _polling = polling;
             _control = control;
             _alarmEval = alarmEval;
+            _alarmCenter = alarmCenter;
             _tags = tags;
             _clock = clock ?? (() => DateTime.Now);
 
@@ -147,6 +152,9 @@ namespace WaterSystem.Wpf.ViewModels
             _polling.OnConnectionChanged += connected => UiDispatcher.Post(() => OnConnectionChanged(connected));
             _polling.OnQualityChanged += ok => UiDispatcher.Post(() => OnQualityChanged(ok));
             _polling.OnError += m => UiDispatcher.Post(() => _log.Error(m));
+            _alarmEval.OnStatusChanged += status => UiDispatcher.Post(() => OnAlarmStatus(status));
+            if (alarmCenter != null)
+                AlarmPanel = new AlarmPanelViewModel(alarmCenter);
 
             ConnectCommand = new RelayCommand(() => _ = ConnectAsync(), () => !_connecting && !_polling.IsConnected);
             DisconnectCommand = new RelayCommand(Disconnect, () => _polling.IsConnected || SimRunning);
@@ -181,6 +189,23 @@ namespace WaterSystem.Wpf.ViewModels
                 InitialSync?.Invoke(data);
             }
             UpdateBadges(data);
+
+            // 报警评估（对应源 OnPollDataReceived → _alarmService.Evaluate，FrmMain.cs:619）
+            _alarmEval.Evaluate(data);
+        }
+
+        /// <summary>增量报警处理（对应 OnAlarmStatusChanged，FrmMain.cs:645-663）：WARN 日志 + AlarmCenter 落库。</summary>
+        public void OnAlarmStatus(SystemStatus status)
+        {
+            foreach (var alarm in status.Alarms)
+            {
+                _log.Warn(alarm.Message);
+                if (_alarmCenter == null) continue;
+                if (alarm.IsActive)
+                    _alarmCenter.Raise(alarm.Name, alarm.Message, AlarmCenter.MapSeverity(alarm.Name));
+                else
+                    _alarmCenter.Clear(alarm.Name, alarm.Message);
+            }
         }
 
         /// <summary>首包前的空态（对应 ResetDisplayValues：设计期样例值是假数据）。</summary>

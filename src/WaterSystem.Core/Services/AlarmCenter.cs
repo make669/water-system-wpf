@@ -159,6 +159,8 @@ namespace Intelligent_water_storage_system.Services
 
         /// <summary>
         /// 报警恢复。没有对应的活跃触发时静默忽略（恢复消息比触发消息多属正常）。
+        /// 已确认（NeedsAck=false）且已恢复的记录随恢复关闭并移出未关闭列表——
+        /// 源实现缺失此移除（已关闭记录滞留 OpenCount，WPF M6 发现并修复，行为与 Acknowledge 对齐）。
         /// </summary>
         public void Clear(string name, string recoveryMessage)
         {
@@ -169,6 +171,8 @@ namespace Intelligent_water_storage_system.Services
                 if (record == null) return;
                 record.ClearedAt = DateTime.Now;
                 Update(record);
+                if (!record.NeedsAck)
+                    _open.Remove(record);   // 已确认 + 已恢复 = 生命周期终点（与 Acknowledge 对齐；WPF M6 修复源滞留缺陷）
                 changed = record;
             }
             if (changed != null) OnAlarmChanged?.Invoke(changed);
