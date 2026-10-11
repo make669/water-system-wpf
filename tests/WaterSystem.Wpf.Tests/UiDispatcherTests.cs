@@ -3,7 +3,9 @@ using Xunit;
 
 namespace WaterSystem.Wpf.Tests
 {
-    /// <summary>T2.4 验收：UiDispatcher 注入 Runner 后，Post 在封送目标上执行且保持顺序。</summary>
+    /// <summary>T2.4 验收：UiDispatcher 注入 Runner 后，Post 在封送目标上执行且保持顺序。
+    /// 与 MainViewModelTests 共用静态 Runner（xunit 同 Collection 串行执行，避免竞态）。</summary>
+    [Collection("UiDispatcher")]
     public class UiDispatcherTests
     {
         [Fact]
