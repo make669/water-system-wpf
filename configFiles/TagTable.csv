@@ -1,0 +1,44 @@
+﻿# 智能水箱上位机 标签表（TagTable.csv）
+# 列: TagName,Address,Type,Access,Scale,Unit,UnitId,Group,Description（列名不区分大小写，顺序不敏感）
+# Type 取值: coil=线圈开关量(0x01读/0x05写) ushort=16位无符号(1寄存器) float=32位浮点(2寄存器) uint=32位无符号(2寄存器)
+# Access 取值: R=只读(PLC→上位机状态) RW=可读写(控制类标签)
+# 约束: float/uint 地址必须为偶数(双寄存器对齐); Scale>0; TagName 全局唯一，字母开头，仅含字母/数字/下划线/连字符，≤32字符
+# 32位值字序: CDAB(低字在前，默认)。真实设备联调时如读数异常，切换 AppConstants.FloatWordOrder 为 ABCD
+# 以 # 开头的行与空行会被忽略
+TagName,Address,Type,Access,Scale,Unit,UnitId,Group,Description,Min,Max
+Pressure-1,0,float,R,0.01,Mpa,1,分管1,分管压力1,,
+Flow-1,2,float,R,0.1,m³,1,分管1,分管流量1,,
+Pump1_F,4,ushort,R,1.0,Hz,1,泵1,1#水泵频率,,
+Pump1_P,5,ushort,R,1.0,KW,1,泵1,1#水泵功率,,
+Pump1_S,6,ushort,R,1.0,r/m,1,泵1,1#水泵转速,,
+Pressure-2,8,float,R,0.01,Mpa,1,分管2,分管压力2,,
+Flow-2,10,float,R,0.1,m³,1,分管2,分管流量2,,
+Pump2_F,12,ushort,R,1.0,Hz,1,泵2,2#水泵频率,,
+Pump2_P,13,ushort,R,1.0,KW,1,泵2,2#水泵功率,,
+Pump2_S,14,ushort,R,1.0,r/m,1,泵2,2#水泵转速,,
+Pressure-3,16,float,R,0.01,Mpa,1,分管3,分管压力3,,
+Flow-3,18,float,R,0.1,m³,1,分管3,分管流量3,,
+Pump3_F,20,ushort,R,1.0,Hz,1,泵3,3#水泵频率,,
+Pump3_P,21,ushort,R,1.0,KW,1,泵3,3#水泵功率,,
+Pump3_S,22,ushort,R,1.0,r/m,1,泵3,3#水泵转速,,
+MainOutPressure,24,float,R,0.01,Mpa,1,工艺,主管输出压力,,
+MainOutFlow,26,float,R,0.1,m³,1,工艺,主管输出流量,,
+CurTemperature,28,float,R,0.1,℃,1,环境,当前温度,-10,50
+SoilHumidity,30,ushort,R,1.0,%,1,环境,土壤湿度,0,100
+Precipitation,31,ushort,R,0.1,mm,1,环境,当前降水量,0,100
+CurWaterPos,32,float,R,0.1,m,1,工艺,当前储水池水位,0,6
+PlanWaters,34,float,R,0.1,m³,1,工艺,计划用水量,0,500
+ActualWaters,36,float,R,0.1,m³,1,工艺,实际用水量,0,500
+Pump1_Run,0,coil,RW,1.0,,1,泵1,1#水泵运行反馈与启停控制,,
+Pump1_Mode,1,coil,RW,1.0,,1,泵1,1#水泵手动(true)/自动(false),,
+Pump1_Fault,2,coil,R,1.0,,1,泵1,1#水泵故障,,
+Pump2_Run,3,coil,RW,1.0,,1,泵2,2#水泵运行反馈与启停控制,,
+Pump2_Mode,4,coil,RW,1.0,,1,泵2,2#水泵手动(true)/自动(false),,
+Pump2_Fault,5,coil,R,1.0,,1,泵2,2#水泵故障,,
+Pump3_Run,6,coil,RW,1.0,,1,泵3,3#水泵运行反馈与启停控制,,
+Pump3_Mode,7,coil,RW,1.0,,1,泵3,3#水泵手动(true)/自动(false),,
+Pump3_Fault,8,coil,R,1.0,,1,泵3,3#水泵故障,,
+MainValve,9,coil,RW,1.0,,1,工艺,主管阀门开关,,
+Valve1,10,coil,RW,1.0,,1,阀门,1#阀门开关,,
+Valve2,11,coil,RW,1.0,,1,阀门,2#阀门开关,,
+Valve3,12,coil,RW,1.0,,1,阀门,3#阀门开关,,
