@@ -24,7 +24,7 @@
 
 ## TestRunner 处置（迁移方案 §8-3）
 
-源仓库 `tools/TestRunner` 为混合体：协议级端到端（`RunCommTests` 等，拉起 ModbusSlaveSim）**随迁本仓库**；WinForms 专项探针（DockOrderExperiment、E1 控件事件探针、WinForms 控件盘点，共 89 处 WinForms/Zhaoxi 引用）**不随迁**，留源仓库作对照。
+源仓库 `tools/TestRunner` 为混合体：协议级端到端（`RunCommTests` 等，拉起 ModbusSlaveSim）**随迁本仓库**；WinForms 专项探针（DockOrderExperiment、E1 控件事件探针、WinForms 控件盘点，共 89 处 WinForms/Zhaoxi 引用）**不随迁**，留源仓库作对照。迁移实证：协议级回归 **PASS=88 / FAIL=0**（拉起模拟器全链路，2026-10-11）。
 
 ## 命名空间决定
 
