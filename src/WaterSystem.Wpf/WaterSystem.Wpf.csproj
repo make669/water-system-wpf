@@ -19,4 +19,8 @@
     <ProjectReference Include="..\WaterSystem.Core\WaterSystem.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+  </ItemGroup>
+
 </Project>
