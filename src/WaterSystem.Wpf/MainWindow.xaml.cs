@@ -53,6 +53,7 @@ namespace WaterSystem.Wpf
         protected override void OnClosing(CancelEventArgs e)
         {
             App.Log?.Info("会话结束：停止数据采集");
+            App.SaveSession();   // M8：开关语义 + 通信参数（显示值不存）
             base.OnClosing(e);
         }
     }
