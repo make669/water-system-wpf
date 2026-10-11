@@ -72,6 +72,17 @@ namespace WaterSystem.Wpf
                 isConnected: () => Client.IsConnected);
             MainVm.ControlVm = ControlVm;
 
+            // 会话恢复（M8，fail-soft）：通信参数 + 开关语义状态；显示值不恢复（空态归零）
+            var session = State.AppStateStore.Load(Path.Combine(AppContext.BaseDirectory, "app_init.json"));
+            if (session != null)
+            {
+                MainVm.IpText = session.Ip;
+                MainVm.PortText = session.Port.ToString();
+                foreach (var kv in session.Switches)
+                    ControlVm.SwitchStates.Set(kv.Key, kv.Value);
+                Log.Info("会话状态已恢复（app_init.json）");
+            }
+
             var window = new MainWindow { DataContext = MainVm };
 
             var (bindErrors, bindWarnings) = Binding.TagBindingRegistry.Check(Tags);
@@ -94,6 +105,24 @@ namespace WaterSystem.Wpf
 
         public static ViewModels.MainViewModel? MainVm { get; private set; }
         public static ViewModels.ControlViewModel? ControlVm { get; private set; }
+
+        /// <summary>会话保存（MainWindow.OnClosing 触发；fail-soft）。</summary>
+        public static void SaveSession()
+        {
+            if (MainVm == null || ControlVm == null) return;
+            try
+            {
+                State.AppStateStore.Save(
+                    Path.Combine(AppContext.BaseDirectory, "app_init.json"),
+                    MainVm.IpText,
+                    int.TryParse(MainVm.PortText, out var p) ? p : 502,
+                    ControlVm.SwitchStates.Snapshot());
+            }
+            catch (Exception ex)
+            {
+                Log?.Warn($"会话保存失败: {ex.Message}");
+            }
+        }
 
         private void OnDispatcherException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {

@@ -13,6 +13,12 @@ namespace WaterSystem.Wpf.ViewModels
 
         public bool this[string tag] { get { lock (_gate) return _states.TryGetValue(tag, out var v) && v; } }
 
+        /// <summary>全量快照（持久化用）。</summary>
+        public IReadOnlyDictionary<string, bool> Snapshot()
+        {
+            lock (_gate) return _states.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase);
+        }
+
         public void Set(string tag, bool value)
         {
             lock (_gate)
