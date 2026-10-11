@@ -5,7 +5,9 @@ using Xunit;
 
 namespace WaterSystem.Wpf.Tests
 {
-    /// <summary>T2.5 验收：注册表分类/去重 + E08/E09/W01 逐码断言（防"漏注册→校验假绿"，风险 R3）。</summary>
+    /// <summary>T2.5 验收：注册表分类/去重 + E08/E09/W01 逐码断言（防"漏注册→校验假绿"，风险 R3）。
+    /// 与 ControlViewModelTests 共用静态注册表（同 Collection 串行，防并行竞态）。</summary>
+    [Collection("UiDispatcher")]
     public class TagBindingRegistryTests
     {
         static List<TagAddress> LoadRealTags()

@@ -62,9 +62,27 @@ namespace WaterSystem.Wpf
             Log.Info($"报警阈值: 水位 {cfg.WaterLevelLow:0.##}~{cfg.WaterLevelHigh:0.##} m，" +
                      $"流量 ≤{cfg.MaxFlow:0.##} m³，压力 ≤{cfg.MaxPressure:0.##} Mpa，泵 {cfg.PumpCount} 台");
 
-            // ⑥⑦ 主窗显示（E08/E09 于 T5.5 在 InitializeComponent 后核对）
+            // ⑥ 主窗构造（InitializeComponent 完成 XAML 绑定登记）+ E08/E09 绑定核对（T5.5）
             MainVm = new ViewModels.MainViewModel(Log, Client, Polling, Control, AlarmEval, Tags);
-            var window = new MainWindow { DataContext = Main };
+            ControlVm = new ViewModels.ControlViewModel(
+                Log, Control, Client, Tags, MainVm,
+                confirm: r => ViewModels.ConfirmDialog.Show(r),
+                notify: m => MessageBox.Show(m, "提示", MessageBoxButton.OK, MessageBoxImage.Warning),
+                isConnected: () => Client.IsConnected);
+            MainVm.ControlVm = ControlVm;
+
+            var window = new MainWindow { DataContext = MainVm };
+
+            var (bindErrors, bindWarnings) = Binding.TagBindingRegistry.Check(Tags);
+            foreach (var w in bindWarnings) Log.Warn(w);
+            if (bindErrors.Count > 0)
+            {
+                Log.Error($"UI 绑定核对失败，共 {bindErrors.Count} 处错误，程序无法启动");
+                new Views.FailFastWindow(bindErrors).ShowDialog();
+                Shutdown(1);
+                return;
+            }
+
             MainWindow = window;
             window.Show();
 
@@ -74,6 +92,7 @@ namespace WaterSystem.Wpf
         }
 
         public static ViewModels.MainViewModel? MainVm { get; private set; }
+        public static ViewModels.ControlViewModel? ControlVm { get; private set; }
 
         private void OnDispatcherException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
