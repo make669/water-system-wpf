@@ -53,6 +53,7 @@ namespace WaterSystem.Wpf.ViewModels
 
         public TagValueStore TagValues { get; } = new();
         public ObservableCollection<BadgeVm> Badges { get; }
+        public LogService Log { get; }
 
         /// <summary>首包同步事件（ControlViewModel 订阅以对齐开关状态；只触发一次）。</summary>
         public event Action<Dictionary<string, DataPoint>>? InitialSync;
@@ -128,6 +129,7 @@ namespace WaterSystem.Wpf.ViewModels
             bool startWatchdog = true, Func<DateTime>? clock = null)
         {
             _log = log;
+            Log = log;
             _client = client;
             _polling = polling;
             _control = control;
