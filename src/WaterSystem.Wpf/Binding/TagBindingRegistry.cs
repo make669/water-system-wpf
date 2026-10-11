@@ -73,6 +73,11 @@ namespace WaterSystem.Wpf.Binding
     /// OneWay 绑定（控制开关的视觉一律 OneWay 绑定 VM——回写防护层 1，迁移方案 §2.4；
     /// 用户手势走命令，不走绑定）。
     /// </summary>
+    /// <summary>
+    /// 显示绑定：{ui:TagBinding Pump1_F} → TagValues[Pump1_F]（OneWay），以 Display 类别登记。
+    /// 控制开关不直接用本扩展（DataTemplate 内 MarkupExtension 拿不到逐项值）——
+    /// 开关视觉经 ControlItemVm.State 绑定，登记在 ControlItemVm 构造时完成（Control 类别）。
+    /// </summary>
     public class TagBindingExtension : System.Windows.Data.Binding
     {
         public TagBindingKind Kind { get; set; } = TagBindingKind.Display;

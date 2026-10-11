@@ -14,6 +14,12 @@ namespace Intelligent_water_storage_system.Simulation
     /// </summary>
     public static class ProtocolProcessor
     {
+        /// <summary>写单线圈（0x05）请求计数（T5.6 回写风暴专项取证面：无人操作时必须为 0）。</summary>
+        public static long WriteCoilRequests;
+
+        /// <summary>清零计数（测试/取证前调用）。</summary>
+        public static void ResetCounters() => WriteCoilRequests = 0;
+
         /// <summary>处理一个请求 PDU，返回响应 PDU。</summary>
         public static byte[] Process(byte[] pdu, DataStore store, ScenarioEngine engine)
         {
@@ -79,6 +85,7 @@ namespace Intelligent_water_storage_system.Simulation
         // ── 0x05 写单线圈：0xFF00=ON 0x0000=OFF；响应原样回显请求 ──
         private static byte[] WriteSingleCoil(byte[] pdu, DataStore store, ScenarioEngine engine)
         {
+            Interlocked.Increment(ref WriteCoilRequests);
             if (pdu.Length < 5) throw new ModbusException(0x01);
             ushort addr = Be16(pdu, 1);
             ushort val = Be16(pdu, 3);

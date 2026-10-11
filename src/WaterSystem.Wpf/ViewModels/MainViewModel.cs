@@ -54,6 +54,12 @@ namespace WaterSystem.Wpf.ViewModels
         public TagValueStore TagValues { get; } = new();
         public ObservableCollection<BadgeVm> Badges { get; }
 
+        /// <summary>首包同步事件（ControlViewModel 订阅以对齐开关状态；只触发一次）。</summary>
+        public event Action<Dictionary<string, DataPoint>>? InitialSync;
+
+        /// <summary>控制链路视图模型（组合根注入；开关视觉绑定经 ControlVm.SwitchStates）。</summary>
+        public ControlViewModel? ControlVm { get; set; }
+
         #region 通知属性
 
         private CommState _connState = CommState.Disconnected;
@@ -170,6 +176,7 @@ namespace WaterSystem.Wpf.ViewModels
             {
                 _initialSyncDone = true;
                 _log.Info("首包同步：界面开关状态对齐 PLC");
+                InitialSync?.Invoke(data);
             }
             UpdateBadges(data);
         }

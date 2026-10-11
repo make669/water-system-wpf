@@ -44,7 +44,7 @@
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左：实时数值（T3.4） -->
+            <!-- 左：实时数值（T3.4） + 控制操作（T5.1，开关视觉 OneWay + 手势命令） -->
             <Border Grid.Row="0" Grid.Column="0" Margin="0,0,12,12"
                     Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
                     BorderThickness="1" CornerRadius="8">
@@ -73,6 +73,31 @@
                                               Value="{ui:TagBinding Pump1_S}" />
                         </WrapPanel>
                     </Grid>
+                    <TextBlock Text="控制操作" FontSize="13" Foreground="{DynamicResource TextSecondary}"
+                               Margin="12,4,0,0" />
+                    <ItemsControl Margin="12,6,12,10" ItemsSource="{Binding ControlVm.ControlItems}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource BgHover}" CornerRadius="6"
+                                        Padding="10,6" Margin="0,0,10,10">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Label}" FontSize="12" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,10,0" />
+                                        <controls:USwitchW VerticalAlignment="Center"
+                                                           SwitchState="{Binding State}"
+                                                           Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                                    RelativeSource={RelativeSource AncestorType=Window}}"
+                                                           CommandParameter="{Binding Tag}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </Border>
 
