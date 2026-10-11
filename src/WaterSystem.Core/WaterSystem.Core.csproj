@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DotNetCore.NPOI" Version="1.2.3" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\configFiles\TagTable.csv" Link="configFiles\TagTable.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\configFiles\AlarmConfig.json" Link="configFiles\AlarmConfig.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\configFiles\Communication.txt" Link="configFiles\Communication.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

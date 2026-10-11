@@ -1,0 +1,15 @@
+// 报警阈值配置（现场可调，无需改代码）。只写需要覆盖的键，未写的键保持内置默认。
+// 错误的配置会在启动时全量报出并拒绝启动（与标签表同一 fail-fast 哲学）。
+// WaterLevelLow/High : 水位报警下限/上限（m）
+// MaxFlow            : 主管流量上限（m³）
+// MaxPressure        : 主管压力上限（Mpa）
+// PumpCount          : 水泵台数（AlarmService 逐台检查故障），1~10
+// ValveNames         : 阀门标签列表（须与 TagTable.csv 的 TagName 一致）
+{
+  "WaterLevelLow": 1.0,
+  "WaterLevelHigh": 6.0,
+  "MaxFlow": 1000.0,
+  "MaxPressure": 10.0,
+  "PumpCount": 3,
+  "ValveNames": [ "MainValve", "Valve1", "Valve2", "Valve3" ]
+}
