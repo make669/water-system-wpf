@@ -103,6 +103,13 @@ namespace Intelligent_water_storage_system.Services
         /// <summary>底层 Modbus 客户端是否已连接</summary>
         public bool IsConnected => _client.IsConnected;
 
+        /// <summary>当前累计重连尝试次数（顶栏"通信中断·第N次重连"的数据源，WPF T3.2 增量）。</summary>
+        public int ReconnectAttempts => _reconnectAttempt;
+
+        /// <summary>指数退避延迟（毫秒）：1s→2s→4s→8s→16s→30s 封顶（纯函数提自 PollAsync，可测）。</summary>
+        public static int BackoffDelayMs(int attempts)
+            => Math.Min(1000 * (1 << Math.Min(attempts, 5)), 30000);
+
         /// <summary>
         /// 最后一次成功轮询的时间点。
         /// UI 兜底判定：当前时间 - 此值 &gt; 3×轮询周期 即视为数据过期
@@ -234,10 +241,8 @@ namespace Intelligent_water_storage_system.Services
             // ─── 第 1 步：检查连接状态，如果断开则尝试重连 ───
             if (!_client.IsConnected)
             {
-                // 指数退避：1s, 2s, 4s, 8s, 16s, 30s (上限)
-                // 1 << n = 2^n，所以 1000 * 2^n 毫秒
-                // Math.Min(_reconnectAttempt, 5) 限制最多左移 5 位（32倍），即 30 秒封顶
-                int delayMs = Math.Min(1000 * (1 << Math.Min(_reconnectAttempt, 5)), 30000);
+                // 指数退避：1s→2s→4s→8s→16s→30s 封顶（提纯为 BackoffDelayMs 纯函数，T3.2 可测）
+                int delayMs = BackoffDelayMs(_reconnectAttempt);
 
                 // 如果距离上次重连尝试还没到退避时间，直接返回，不发起重连
                 if ((DateTime.Now - _lastReconnectAttempt).TotalMilliseconds < delayMs)
