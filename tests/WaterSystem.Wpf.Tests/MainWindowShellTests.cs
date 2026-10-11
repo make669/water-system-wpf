@@ -34,7 +34,7 @@ namespace WaterSystem.Wpf.Tests
                     Assert.True(w <= SystemParameters.WorkArea.Width + 1, $"宽溢出: {w}");
                     Assert.True(h <= SystemParameters.WorkArea.Height + 1, $"高溢出: {h}");
                     var vb = Assert.IsType<System.Windows.Controls.Viewbox>(window.Content);
-                    var canvas = Assert.IsType<System.Windows.Controls.Grid>(vb.Child);
+                    var canvas = Assert.IsType<System.Windows.Controls.Canvas>(vb.Child);
                     Assert.Equal(1492, canvas.Width);
                     Assert.Equal(1000, canvas.Height);
                     Assert.Equal(System.Windows.Media.Stretch.Uniform, vb.Stretch);

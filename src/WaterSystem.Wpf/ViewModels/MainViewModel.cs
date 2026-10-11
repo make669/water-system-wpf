@@ -76,6 +76,20 @@ namespace WaterSystem.Wpf.ViewModels
         /// <summary>趋势快照（300 点滚动缓冲的副本；每轮数据发布一次）。</summary>
         public double[] TrendSnapshot { get; private set; } = Array.Empty<double>();
 
+        private string _clockText = DateTime.Now.ToString("HH:mm:ss");
+        public string ClockText
+        {
+            get => _clockText;
+            private set { _clockText = value; PropertyChanged?.Invoke(this, new(nameof(ClockText))); }
+        }
+
+        private bool _hasUnack;
+        public bool HasUnack
+        {
+            get => _hasUnack;
+            private set { _hasUnack = value; PropertyChanged?.Invoke(this, new(nameof(HasUnack))); }
+        }
+
         #region 通知属性
 
         private CommState _connState = CommState.Disconnected;
@@ -166,7 +180,17 @@ namespace WaterSystem.Wpf.ViewModels
             _polling.OnError += m => UiDispatcher.Post(() => _log.Error(m));
             _alarmEval.OnStatusChanged += status => UiDispatcher.Post(() => OnAlarmStatus(status));
             if (alarmCenter != null)
+            {
                 AlarmPanel = new AlarmPanelViewModel(alarmCenter);
+                alarmCenter.OnAlarmChanged += _ => UiDispatcher.Post(() =>
+                    HasUnack = alarmCenter.UnacknowledgedCount > 0);
+                HasUnack = alarmCenter.UnacknowledgedCount > 0;
+            }
+
+            // 顶栏时钟（1s）
+            var clockTimer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            clockTimer.Tick += (_, _) => ClockText = _clock().ToString("HH:mm:ss");
+            clockTimer.Start();
 
             // 趋势阈值（修 P10：数据源=AlarmConfig + TagTable 量程）
             ThresholdLow = config?.WaterLevelLow ?? 1.0;

@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:WaterSystem.Wpf.Controls">
     <!-- 深色令牌（唯一出处：《UI人性化设计概要》v2.0 §4.4；修改令牌必须先改概要） -->
     <SolidColorBrush x:Key="BgWindow" Color="#0B1220" />
     <SolidColorBrush x:Key="BgCard" Color="#131C2E" />
@@ -57,5 +58,36 @@
     <Style TargetType="DataGridRow">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimary}" />
+    </Style>
+
+    <!-- 卡片容器（附录 B CardChrome：卡体 + 边线 + 卡底标签条） -->
+    <Style TargetType="controls:CardView">
+        <Setter Property="Background" Value="{StaticResource BgCard}" />
+        <Setter Property="BorderBrush" Value="{StaticResource Stroke}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="10,4,10,8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="controls:CardView">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="26" />
+                            </Grid.RowDefinitions>
+                            <ContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" />
+                            <Border Grid.Row="1" Background="{StaticResource BgCardLabel}">
+                                <TextBlock Text="{TemplateBinding Title}" FontSize="12"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           Margin="12,0,0,0" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>
