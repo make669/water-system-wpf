@@ -51,6 +51,7 @@ namespace WaterSystem.Wpf.ViewModels
         private Task? _simTask;
         private DataStore? _simStore;
         private bool _connecting;
+        private readonly List<double> _trend = new();
 
         public TagValueStore TagValues { get; } = new();
         public ObservableCollection<BadgeVm> Badges { get; }
@@ -64,6 +65,16 @@ namespace WaterSystem.Wpf.ViewModels
 
         /// <summary>实时报警面板（AlarmCenter 非空时创建；数据源=OpenSnapshot/OnAlarmChanged）。</summary>
         public ViewModels.AlarmPanelViewModel? AlarmPanel { get; }
+
+        /// <summary>水位阈值（AlarmConfig，趋势卡红线数据源，修 P10）。</summary>
+        public double ThresholdLow { get; }
+        public double ThresholdHigh { get; }
+
+        /// <summary>Y 轴上限（TagTable CurWaterPos 量程上限 ×1.0833）。</summary>
+        public double YMax { get; }
+
+        /// <summary>趋势快照（300 点滚动缓冲的副本；每轮数据发布一次）。</summary>
+        public double[] TrendSnapshot { get; private set; } = Array.Empty<double>();
 
         #region 通知属性
 
@@ -130,7 +141,8 @@ namespace WaterSystem.Wpf.ViewModels
 
         public MainViewModel(LogService log, ModbusClient client, DataPollingService polling,
             ControlService control, AlarmService alarmEval, List<TagAddress> tags,
-            bool startWatchdog = true, Func<DateTime>? clock = null, AlarmCenter? alarmCenter = null)
+            bool startWatchdog = true, Func<DateTime>? clock = null, AlarmCenter? alarmCenter = null,
+            AlarmConfig? config = null)
         {
             _log = log;
             Log = log;
@@ -156,6 +168,12 @@ namespace WaterSystem.Wpf.ViewModels
             if (alarmCenter != null)
                 AlarmPanel = new AlarmPanelViewModel(alarmCenter);
 
+            // 趋势阈值（修 P10：数据源=AlarmConfig + TagTable 量程）
+            ThresholdLow = config?.WaterLevelLow ?? 1.0;
+            ThresholdHigh = config?.WaterLevelHigh ?? 6.0;
+            var water = tags.FirstOrDefault(t => t.TagName.Equals("CurWaterPos", StringComparison.OrdinalIgnoreCase));
+            YMax = Math.Round((water?.MaxValue ?? 6.0) * 1.0833, 2);   // 量程上限 + 8% 余量
+
             ConnectCommand = new RelayCommand(() => _ = ConnectAsync(), () => !_connecting && !_polling.IsConnected);
             DisconnectCommand = new RelayCommand(Disconnect, () => _polling.IsConnected || SimRunning);
             ToggleSimCommand = new RelayCommand(() => _ = ToggleSimulationAsync(), () => !_connecting);
@@ -174,6 +192,14 @@ namespace WaterSystem.Wpf.ViewModels
         public void ApplyData(Dictionary<string, DataPoint> data)
         {
             TagValues.Update(data.Select(kv => new KeyValuePair<string, double>(kv.Key, kv.Value.Value)));
+
+            // 趋势缓冲（300 点滚动，修 P10：数据源 CurWaterPos）
+            if (data.TryGetValue("CurWaterPos", out var water))
+            {
+                _trend.Add(water.Value);
+                if (_trend.Count > 300) _trend.RemoveAt(0);
+                TrendSnapshot = _trend.ToArray();
+            }
 
             if (!_qualityOk)
             {

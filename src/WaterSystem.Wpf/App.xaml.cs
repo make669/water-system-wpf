@@ -64,7 +64,7 @@ namespace WaterSystem.Wpf
 
             // ⑥ 主窗构造（InitializeComponent 完成 XAML 绑定登记）+ E08/E09 绑定核对（T5.5）
             MainVm = new ViewModels.MainViewModel(Log, Client, Polling, Control, AlarmEval, Tags,
-                alarmCenter: AlarmCenter);
+                alarmCenter: AlarmCenter, config: pre.Config);
             ControlVm = new ViewModels.ControlViewModel(
                 Log, Control, Client, Tags, MainVm,
                 confirm: r => ViewModels.ConfirmDialog.Show(r),

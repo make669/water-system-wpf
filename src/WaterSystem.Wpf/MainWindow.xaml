@@ -45,8 +45,13 @@
                 <ColumnDefinition Width="384" />
             </Grid.ColumnDefinitions>
 
-            <!-- 左：实时数值（T3.4） + 控制操作（T5.1，开关视觉 OneWay + 手势命令） -->
-            <Border Grid.Row="0" Grid.Column="0" Margin="0,0,12,12"
+            <!-- 左列：实时数值+控制操作（上） / 趋势卡（下） -->
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="180" />
+                </Grid.RowDefinitions>
+            <Border Grid.Row="0" Margin="0,0,12,12"
                     Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource Stroke}"
                     BorderThickness="1" CornerRadius="8">
                 <StackPanel>
@@ -101,6 +106,25 @@
                     </ItemsControl>
                 </StackPanel>
             </Border>
+
+            <!-- 趋势卡（T7.1：水位 300 点 + 阈值红线，修 P10） -->
+            <Border Grid.Row="1" Margin="0,0,12,0" Background="{DynamicResource BgCard}"
+                    BorderBrush="{DynamicResource Stroke}" BorderThickness="1" CornerRadius="8">
+                <Grid Margin="8,4,8,6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="趋势曲线 · 蓄水池水位（5 分钟）" FontSize="13"
+                               Foreground="{DynamicResource TextSecondary}" Margin="4,2,0,4" />
+                    <controls:WaterTrendChart Grid.Row="1"
+                                              Snapshot="{Binding TrendSnapshot}"
+                                              ThresholdLow="{Binding ThresholdLow}"
+                                              ThresholdHigh="{Binding ThresholdHigh}"
+                                              YMax="{Binding YMax}" />
+                </Grid>
+            </Border>
+            </Grid>
 
             <!-- 右：实时报警卡（T6.2，四态） + 通信控制卡 -->
             <Grid Grid.Column="1">
