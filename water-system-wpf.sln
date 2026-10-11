@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestRunner", "tools\TestRun
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterSystem.Wpf", "src\WaterSystem.Wpf\WaterSystem.Wpf.csproj", "{1C22B04F-7A7F-4959-B9D6-A72AD5553980}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaterSystem.Wpf.Tests", "tests\WaterSystem.Wpf.Tests\WaterSystem.Wpf.Tests.csproj", "{AB472453-0870-4E19-8698-DBB9DAF8F669}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -89,6 +91,18 @@ Global
 		{1C22B04F-7A7F-4959-B9D6-A72AD5553980}.Release|x64.Build.0 = Release|Any CPU
 		{1C22B04F-7A7F-4959-B9D6-A72AD5553980}.Release|x86.ActiveCfg = Release|Any CPU
 		{1C22B04F-7A7F-4959-B9D6-A72AD5553980}.Release|x86.Build.0 = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|x64.Build.0 = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Debug|x86.Build.0 = Debug|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|x64.ActiveCfg = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|x64.Build.0 = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|x86.ActiveCfg = Release|Any CPU
+		{AB472453-0870-4E19-8698-DBB9DAF8F669}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,6 +113,7 @@ Global
 		{18FB16C1-09C0-452D-A07B-0417687368B5} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{F3E9D8AE-0D14-4F33-A16F-826FEA32B453} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 		{1C22B04F-7A7F-4959-B9D6-A72AD5553980} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{AB472453-0870-4E19-8698-DBB9DAF8F669} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {75D8FD2B-886F-436B-AFF2-E6B87C9B4DEF}
