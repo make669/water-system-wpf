@@ -104,12 +104,89 @@
                                                     RelativeSource={RelativeSource AncestorType=Window}}"
                                            CommandParameter="MainValve" />
                     </StackPanel>
-                    <!-- 管廊与泵位（T4.2 布线） -->
-                    <TextBlock Canvas.Left="340" Canvas.Top="8" Text="管廊布线 T4.2（上廊主管 / 三泵列 / 下廊汇管）"
-                               FontSize="11" Foreground="{DynamicResource TextSecondary}" />
+                    <!-- ═══ 上管廊 y=16：主管与供水短柱（T4.2） ═══ -->
+                    <TextBlock Canvas.Left="340" Canvas.Top="0" Text="主管（进水）" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" />
+                    <controls:PipeLine Canvas.Left="226" Canvas.Top="13" Width="824" Height="6"
+                                       Orientation="Horizontal" Direction="LeftToRight"
+                                       Active="{Binding IsPipeMainActive}" />
+                    <!-- 总阀门阀体示意（x=300，P&ID 双三角阀门符号） -->
+                    <Path Canvas.Left="292" Canvas.Top="10" Data="M0,0 L16,12 L16,0 L0,12 Z"
+                          Stroke="{DynamicResource Stroke}" StrokeThickness="1">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Fill" Value="{DynamicResource Off}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPipeMainActive}" Value="True">
+                                        <Setter Property="Fill" Value="{DynamicResource Ok}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                    <TextBlock Canvas.Left="284" Canvas.Top="24" Text="总阀门" FontSize="10"
+                               Foreground="{DynamicResource TextSecondary}" />
+
+                    <!-- 供水短柱 1# 2# 3# (x=468, 714, 960, y: 16→36) -->
+                    <controls:PipeLine Canvas.Left="465" Canvas.Top="16" Width="6" Height="20"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipeMainActive}" />
+                    <controls:PipeLine Canvas.Left="711" Canvas.Top="16" Width="6" Height="20"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipeMainActive}" />
+                    <controls:PipeLine Canvas.Left="957" Canvas.Top="16" Width="6" Height="20"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipeMainActive}" />
+
+                    <!-- ═══ 泵列示意区 (y: 36..392，卡内纵管) ═══ -->
+                    <controls:PipeLine Canvas.Left="465" Canvas.Top="36" Width="6" Height="300"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump1Active}" />
+                    <controls:PipeLine Canvas.Left="711" Canvas.Top="36" Width="6" Height="300"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump2Active}" />
+                    <controls:PipeLine Canvas.Left="957" Canvas.Top="36" Width="6" Height="300"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump3Active}" />
+
+                    <!-- 出口短柱 1# 2# 3# (x=468, 714, 960, y: 392→416) -->
+                    <controls:PipeLine Canvas.Left="465" Canvas.Top="392" Width="6" Height="24"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump1Active}" />
+                    <controls:PipeLine Canvas.Left="711" Canvas.Top="392" Width="6" Height="24"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump2Active}" />
+                    <controls:PipeLine Canvas.Left="957" Canvas.Top="392" Width="6" Height="24"
+                                       Orientation="Vertical" Direction="TopToBottom"
+                                       Active="{Binding IsPipePump3Active}" />
+
+                    <!-- ═══ 下管廊 y=416：汇管与主管输出 ═══ -->
+                    <controls:PipeLine Canvas.Left="465" Canvas.Top="413" Width="585" Height="6"
+                                       Orientation="Horizontal" Direction="LeftToRight"
+                                       Active="{Binding IsPipeMainActive}" />
+                    <TextBlock Canvas.Left="960" Canvas.Top="424" Text="汇管 → 主管输出" FontSize="11"
+                               Foreground="{DynamicResource TextSecondary}" />
+
+                    <!-- ═══ 工艺图例（常驻过程卡左下角，设计书 §1.0/§2.2 自解释原则） ═══ -->
+                    <Border Canvas.Left="16" Canvas.Top="358" Background="{DynamicResource BgHover}"
+                            CornerRadius="4" Padding="8,4">
+                        <StackPanel Orientation="Horizontal">
+                            <Line X1="0" Y1="6" X2="14" Y2="6" Stroke="{DynamicResource PipeRun}" StrokeThickness="3" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="流动" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Line X1="0" Y1="6" X2="14" Y2="6" Stroke="{DynamicResource PipeIdle}" StrokeThickness="3" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="无水" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource Ok}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="运行/开" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource Alarm}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="故障" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <Ellipse Width="8" Height="8" Fill="{DynamicResource Off}" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                            <TextBlock Text="停止/关" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+
                     <!-- 控制操作条（T4.4 将移入泵卡；此为功能过渡位） -->
-                    <Border Canvas.Left="330" Canvas.Top="352" Width="736" Height="96"
-                            Background="{DynamicResource BgHover}" CornerRadius="6" Padding="10,6">
+                    <Border Canvas.Left="330" Canvas.Top="340" Width="736" Height="70"
+                            Background="{DynamicResource BgHover}" CornerRadius="6" Padding="10,6" Opacity="0.95">
                         <ItemsControl ItemsSource="{Binding ControlVm.ControlItems}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -118,7 +195,7 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,14,6">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,14,4">
                                         <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center"
                                                    Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
                                         <controls:USwitchW VerticalAlignment="Center"

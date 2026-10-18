@@ -1,7 +1,7 @@
 using System.Threading;
 using System.Windows;
-using System.Windows;
 using WaterSystem.Wpf;
+using WaterSystem.Wpf.Controls;
 using Xunit;
 
 namespace WaterSystem.Wpf.Tests
@@ -38,6 +38,10 @@ namespace WaterSystem.Wpf.Tests
                     Assert.Equal(1492, canvas.Width);
                     Assert.Equal(1000, canvas.Height);
                     Assert.Equal(System.Windows.Media.Stretch.Uniform, vb.Stretch);
+
+                    // T4.2 验收：工艺总览卡内包含 11 段管道
+                    var pipes = FindLogicalChildren<PipeLine>(canvas).ToList();
+                    Assert.Equal(11, pipes.Count);
                     result = (true, "");
                 }
                 catch (Exception ex)
@@ -50,6 +54,20 @@ namespace WaterSystem.Wpf.Tests
             Assert.True(t.Join(10_000), "主窗构造超时");
             Assert.NotNull(result);
             Assert.True(result!.Value.ok, result.Value.detail);
+        }
+
+        private static IEnumerable<T> FindLogicalChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+            foreach (var raw in LogicalTreeHelper.GetChildren(depObj))
+            {
+                if (raw is DependencyObject child)
+                {
+                    if (child is T t) yield return t;
+                    foreach (var other in FindLogicalChildren<T>(child))
+                        yield return other;
+                }
+            }
         }
     }
 }
