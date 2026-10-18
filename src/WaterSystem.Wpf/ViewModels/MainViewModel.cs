@@ -145,6 +145,25 @@ namespace WaterSystem.Wpf.ViewModels
             private set { _simButtonText = value; PropertyChanged?.Invoke(this, new(nameof(SimButtonText))); }
         }
 
+        /// <summary>
+        /// 水流管道流动状态（B8 水路因果 + T4.2 管廊布线）：
+        /// 进水段（MainValve 组）= PLC 连接且主阀开；
+        /// 泵支路（PumpN 组）= 进水段流动 且 对应泵运行反馈。
+        /// 离线时全部为 false（ResetProcessGraphics 语义）。
+        /// </summary>
+        public bool IsPipeMainActive => ConnState == CommState.Connected && TagValues["MainValve"] > 0;
+        public bool IsPipePump1Active => IsPipeMainActive && TagValues["Pump1_Run"] > 0;
+        public bool IsPipePump2Active => IsPipeMainActive && TagValues["Pump2_Run"] > 0;
+        public bool IsPipePump3Active => IsPipeMainActive && TagValues["Pump3_Run"] > 0;
+
+        public void NotifyPipeStates()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipeMainActive)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump1Active)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump2Active)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump3Active)));
+        }
+
         #endregion
 
         public ICommand ConnectCommand { get; }
@@ -259,7 +278,11 @@ namespace WaterSystem.Wpf.ViewModels
         }
 
         /// <summary>首包前的空态（对应 ResetDisplayValues：设计期样例值是假数据）。</summary>
-        public void ResetDisplayValues() => TagValues.ResetToZero();
+        public void ResetDisplayValues()
+        {
+            TagValues.ResetToZero();
+            NotifyPipeStates();
+        }
 
         // ═══════════════ 状态流 ═══════════════
 
@@ -301,6 +324,7 @@ namespace WaterSystem.Wpf.ViewModels
             ConnStateText = text;
             ConnToneKey = toneKey;
             CommandManager.InvalidateRequerySuggested();   // 按钮互斥启用即时刷新（T3.3）
+            NotifyPipeStates();
         }
 
         // ═══════════════ 状态徽章带（修 P5/P6：灯文字随状态变） ═══════════════
@@ -319,6 +343,7 @@ namespace WaterSystem.Wpf.ViewModels
             SetValveBadge(Badges[4], data, "Valve1");
             SetValveBadge(Badges[5], data, "Valve2");
             SetValveBadge(Badges[6], data, "Valve3");
+            NotifyPipeStates();
         }
 
         private static void SetValveBadge(BadgeVm b, Dictionary<string, DataPoint> data, string tag)
@@ -336,6 +361,7 @@ namespace WaterSystem.Wpf.ViewModels
                 b.Word = b.Label.Contains("泵") ? "○ 停止" : "○ 关";
                 b.ToneKey = "Off";
             }
+            NotifyPipeStates();
         }
 
         // ═══════════════ 看门狗（200ms，数据过期兜底——FrmMain.cs:940-947 平移） ═══════════════
