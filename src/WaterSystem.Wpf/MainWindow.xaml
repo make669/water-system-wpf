@@ -79,17 +79,10 @@
                     <!-- 水源段（细则 §4.1 过程卡内部表） -->
                     <TextBlock Canvas.Left="16" Canvas.Top="4" Text="蓄水池" FontSize="12"
                                Foreground="{DynamicResource TextSecondary}" />
-                    <Border Canvas.Left="16" Canvas.Top="24" Width="210" Height="150"
-                            BorderBrush="{DynamicResource Stroke}" BorderThickness="3" CornerRadius="10">
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                            <TextBlock Text="62%" FontSize="22" FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimary}"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="液位图 T4.3" FontSize="10"
-                                       Foreground="{DynamicResource TextSecondary}"
-                                       HorizontalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
+                    <controls:LevelTank Canvas.Left="16" Canvas.Top="20" Width="210" Height="156"
+                                        Value="{ui:TagBinding CurWaterPos}"
+                                        LowAt="{Binding ThresholdLow}"
+                                        HighAt="{Binding ThresholdHigh}" />
                     <controls:ParaBox Canvas.Left="16" Canvas.Top="184" Title="水位" Unit="m" Decimals="1"
                                       Value="{ui:TagBinding CurWaterPos}" />
                     <controls:ParaBox Canvas.Left="16" Canvas.Top="224" Title="主管压力" Unit="MPa" Decimals="2"

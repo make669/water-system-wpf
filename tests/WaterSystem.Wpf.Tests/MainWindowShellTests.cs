@@ -42,6 +42,10 @@ namespace WaterSystem.Wpf.Tests
                     // T4.2 验收：工艺总览卡内包含 11 段管道
                     var pipes = FindLogicalChildren<PipeLine>(canvas).ToList();
                     Assert.Equal(11, pipes.Count);
+
+                    // T4.3 验收：工艺总览卡内包含 LevelTank 水池
+                    var tank = Assert.Single(FindLogicalChildren<LevelTank>(canvas));
+                    Assert.NotNull(tank);
                     result = (true, "");
                 }
                 catch (Exception ex)
