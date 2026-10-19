@@ -1,4 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -16,10 +20,10 @@ namespace WaterSystem.Wpf.Views
     {
         private const int MaxBuffer = 5000;
 
-        private readonly LogService _log;
+        private readonly LogService? _log;
         private readonly AlarmCenter? _center;
         private readonly List<LogEntry> _buffer = new();
-        private readonly List<LogEntry> _view = new();
+        private readonly ObservableCollection<LogEntry> _view = new();
         private readonly object _gate = new();
         private bool _paused;
 
@@ -30,13 +34,21 @@ namespace WaterSystem.Wpf.Views
         private readonly TextBox _keyword = new() { Width = 150, Height = 24 };
         private readonly CheckBox _autoScroll = MakeCheck("自动滚动", true);
         private readonly Button _pauseButton = MakeButton("暂停", 72);
-        private readonly DataGrid _grid = new() { IsReadOnly = true, AutoGenerateColumns = false, HeadersVisibility = DataGridHeadersVisibility.Column };
+        private readonly DataGrid _grid = new()
+        {
+            IsReadOnly = true,
+            AutoGenerateColumns = false,
+            HeadersVisibility = DataGridHeadersVisibility.Column,
+            EnableRowVirtualization = true,
+            EnableColumnVirtualization = true,
+            GridLinesVisibility = DataGridGridLinesVisibility.Horizontal,
+        };
 
         private readonly DataGridTextColumn _colTime = new() { Header = "时间", Binding = new System.Windows.Data.Binding("Time") { StringFormat = "HH:mm:ss" }, Width = new DataGridLength(90) };
         private readonly DataGridTextColumn _colLevel = new() { Header = "级别", Binding = new System.Windows.Data.Binding("Level"), Width = new DataGridLength(60) };
         private readonly DataGridTextColumn _colMessage = new() { Header = "消息", Binding = new System.Windows.Data.Binding("Message"), Width = new DataGridLength(1, DataGridLengthUnitType.Star) };
 
-        public LogViewerWindow(LogService log, AlarmCenter? center)
+        public LogViewerWindow(LogService? log, AlarmCenter? center)
         {
             _log = log;
             _center = center;
@@ -61,8 +73,8 @@ namespace WaterSystem.Wpf.Views
             toolbar.Children.Add(kwLabel);
             _keyword.TextChanged += (_, _) => RebuildView();
             toolbar.Children.Add(_keyword);
-            _autoScroll.Checked += (_, _) => RebuildView();
-            _autoScroll.Unchecked += (_, _) => RebuildView();
+            _autoScroll.Checked += (_, _) => TryScrollToBottom();
+            _autoScroll.Unchecked += (_, _) => { };
             toolbar.Children.Add(_autoScroll);
             _pauseButton.Click += (_, _) => TogglePause();
             toolbar.Children.Add(_pauseButton);
@@ -73,6 +85,7 @@ namespace WaterSystem.Wpf.Views
             _grid.Columns.Add(_colTime);
             _grid.Columns.Add(_colLevel);
             _grid.Columns.Add(_colMessage);
+            _grid.ItemsSource = _view;
             _grid.LoadingRow += (_, e) => Services.LogRowStyler.Apply(e.Row, (LogEntry)e.Row.Item);
             _grid.MouseDoubleClick += (_, _) =>
             {
@@ -89,10 +102,28 @@ namespace WaterSystem.Wpf.Views
             grid.Children.Add(_grid);
             Content = grid;
 
-            foreach (var entry in log.Entries) Append(entry);   // 回放主界面现有条目
-            log.OnEntry += Append;
-            Closed += (_, _) => log.OnEntry -= Append;
+            // 回放主界面现有条目（一次性载入 buffer，构造期间不触发逐行滚动）
+            lock (_gate)
+            {
+                if (_log?.Entries != null)
+                {
+                    foreach (var entry in _log.Entries)
+                    {
+                        _buffer.Add(entry);
+                        if (_buffer.Count > MaxBuffer) _buffer.RemoveAt(0);
+                    }
+                }
+            }
+
             RebuildView();
+
+            if (_log != null)
+            {
+                _log.OnEntry += Append;
+                Closed += (_, _) => _log.OnEntry -= Append;
+            }
+
+            Loaded += (_, _) => TryScrollToBottom();
         }
 
         private static CheckBox MakeCheck(string text, bool @checked) =>
@@ -115,24 +146,67 @@ namespace WaterSystem.Wpf.Views
                 _buffer.Add(entry);
                 if (_buffer.Count > MaxBuffer) _buffer.RemoveAt(0);
             }
+
+            if (_paused) return;
+
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(() => AppendToView(entry)));
+            }
+            else
+            {
+                AppendToView(entry);
+            }
+        }
+
+        private void AppendToView(LogEntry entry)
+        {
             if (_paused) return;
             if (PassesFilter(entry))
             {
                 _view.Add(entry);
                 if (_view.Count > MaxBuffer) _view.RemoveAt(0);
-                if (_grid.ItemsSource == null) _grid.ItemsSource = _view;
-                if (_autoScroll.IsChecked == true && _view.Count > 0)
-                    _grid.ScrollIntoView(_view[^1]);
+                TryScrollToBottom();
             }
         }
 
         private void RebuildView()
         {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.BeginInvoke(new Action(RebuildView));
+                return;
+            }
+
             if (_paused) return;
-            lock (_gate) _view.AddRange(_buffer.Where(PassesFilter));
-            while (_view.Count > MaxBuffer) _view.RemoveAt(0);
-            _grid.ItemsSource = _view;
-            if (_autoScroll.IsChecked == true && _view.Count > 0) _grid.ScrollIntoView(_view[^1]);
+
+            List<LogEntry> matched;
+            lock (_gate)
+            {
+                matched = _buffer.Where(PassesFilter).ToList();
+            }
+
+            _view.Clear();
+            foreach (var item in matched)
+            {
+                _view.Add(item);
+            }
+
+            TryScrollToBottom();
+        }
+
+        private void TryScrollToBottom()
+        {
+            if (!IsLoaded || _autoScroll.IsChecked != true || _view.Count == 0) return;
+
+            try
+            {
+                _grid.ScrollIntoView(_view[^1]);
+            }
+            catch
+            {
+                // 忽略非就绪状态下的滚动异常
+            }
         }
 
         private bool PassesFilter(LogEntry e) => Passes(
@@ -181,8 +255,6 @@ namespace WaterSystem.Wpf.Views
                     "清屏确认", MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
             lock (_gate) _buffer.Clear();
             _view.Clear();
-            _grid.ItemsSource = null;
-            _grid.ItemsSource = _view;
         }
 
         private void OpenLogDir()

@@ -52,7 +52,10 @@ namespace WaterSystem.Wpf
         private void OpenLogViewer()
         {
             if (_logViewer == null)
+            {
                 _logViewer = new Views.LogViewerWindow(App.Log, App.AlarmCenter) { Owner = this };
+                _logViewer.Closed += (_, _) => _logViewer = null;
+            }
             _logViewer.Show();
             _logViewer.Activate();
             App.Log?.Info("日志窗口已打开");
