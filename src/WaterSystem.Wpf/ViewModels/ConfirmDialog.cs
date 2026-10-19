@@ -70,5 +70,25 @@ namespace WaterSystem.Wpf.ViewModels
             w.ShowDialog();
             return w.Confirmed;
         }
+
+        /// <summary>系统退出确认（修 P14）：运行中误触关闭弹确认框，默认焦点在"取消"侧。</summary>
+        public static bool ConfirmExit(Window? owner = null)
+        {
+            var req = new ConfirmRequest(
+                Message: "确定要退出智能水箱上位机系统吗？",
+                TagName: "System",
+                Description: "上位机监控主程序",
+                CurrentText: "正在运行与采集",
+                TargetText: "停止采集并安全退出",
+                PlcText: "会话将正常终止");
+            var w = new ConfirmDialog(req)
+            {
+                Title = "退出系统确认",
+            };
+            if (owner != null && owner.IsLoaded)
+                w.Owner = owner;
+            w.ShowDialog();
+            return w.Confirmed;
+        }
     }
 }
