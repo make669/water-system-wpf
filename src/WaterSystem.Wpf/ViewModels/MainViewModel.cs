@@ -126,6 +126,19 @@ namespace WaterSystem.Wpf.ViewModels
         private string _portText = "502";
         public string PortText { get => _portText; set { _portText = value; PropertyChanged?.Invoke(this, new(nameof(PortText))); } }
 
+        private double _waterCompletionRate;
+        /// <summary>用水完成率（实际用水 / 计划用水 × 100%）。</summary>
+        public double WaterCompletionRate
+        {
+            get => _waterCompletionRate;
+            private set
+            {
+                if (Math.Abs(_waterCompletionRate - value) < 0.0001) return;
+                _waterCompletionRate = value;
+                PropertyChanged?.Invoke(this, new(nameof(WaterCompletionRate)));
+            }
+        }
+
         private bool _simRunning;
         public bool SimRunning
         {
@@ -244,6 +257,13 @@ namespace WaterSystem.Wpf.ViewModels
                 TrendSnapshot = _trend.ToArray();
             }
 
+            if (data.TryGetValue("ActualWaters", out var actual) &&
+                data.TryGetValue("PlanWaters", out var plan) &&
+                plan.Value > 0.001)
+            {
+                WaterCompletionRate = Math.Round((actual.Value / plan.Value) * 100.0, 1);
+            }
+
             if (!_qualityOk)
             {
                 _qualityOk = true;
@@ -281,6 +301,7 @@ namespace WaterSystem.Wpf.ViewModels
         public void ResetDisplayValues()
         {
             TagValues.ResetToZero();
+            WaterCompletionRate = 0.0;
             NotifyPipeStates();
         }
 
