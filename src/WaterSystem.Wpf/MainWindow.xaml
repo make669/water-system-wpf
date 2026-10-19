@@ -432,14 +432,24 @@
 
             <!-- ═══ 用水情况卡 (12,648,322,180) ═══ -->
             <controls:CardView Canvas.Left="12" Canvas.Top="648" Width="322" Height="180" Title="用水情况">
-                <StackPanel Margin="16,10,0,0">
-                    <controls:ParaBox Title="计划" Unit="m³" Decimals="1" Margin="0,0,0,10"
-                                      Value="{ui:TagBinding PlanWaters}" />
-                    <controls:ParaBox Title="实际" Unit="m³" Decimals="1" Margin="0,0,0,10"
-                                      Value="{ui:TagBinding ActualWaters}" />
-                    <TextBlock Text="完成率环 T4.5" FontSize="11" Foreground="{DynamicResource TextSecondary}"
-                               Margin="0,6,0,0" />
-                </StackPanel>
+                <Grid Margin="8,10,8,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <!-- 完成率环 96×96 (24, 42) -->
+                    <controls:RingGauge Grid.Column="0" Width="96" Height="96"
+                                        Label="完成率" Unit="%" MinValue="0" MaxValue="100" Decimals="0"
+                                        Value="{Binding WaterCompletionRate}"
+                                        VerticalAlignment="Center" Margin="4,0,8,0" />
+                    <!-- 计划/实际两行键值 -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <controls:ParaBox Title="计划" Unit="m³" Decimals="1" Margin="0,0,0,10"
+                                          Value="{ui:TagBinding PlanWaters}" />
+                        <controls:ParaBox Title="实际" Unit="m³" Decimals="1"
+                                          Value="{ui:TagBinding ActualWaters}" />
+                    </StackPanel>
+                </Grid>
             </controls:CardView>
 
             <!-- ═══ 趋势卡 (342,648,748,180)——修 P10 ═══ -->
@@ -535,14 +545,22 @@
                 </Grid>
             </controls:CardView>
 
-            <!-- ═══ 环境数据卡 (1102,390,384,250)——环形仪表 T4.5 ═══ -->
+            <!-- ═══ 环境数据卡 (1102,390,384,250)——环形仪表 T4.5（修 P7 量程对齐） ═══ -->
             <controls:CardView Canvas.Left="1102" Canvas.Top="390" Width="384" Height="250" Title="环境数据">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="环形仪表 ×4（T4.5）" FontSize="12"
-                               Foreground="{DynamicResource TextSecondary}" />
-                    <TextBlock Text="量程=TagTable Min/Max（修 P7）" FontSize="11"
-                               Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0" />
-                </StackPanel>
+                <UniformGrid Columns="2" Rows="2" Margin="10,4,10,6">
+                    <!-- 1. 温度: -10 ~ 50 ℃ -->
+                    <controls:RingGauge Label="温度" Unit="℃" MinValue="-10" MaxValue="50" Decimals="1"
+                                        Value="{ui:TagBinding CurTemperature}" />
+                    <!-- 2. 土壤湿度: 0 ~ 100 % -->
+                    <controls:RingGauge Label="土壤湿度" Unit="%" MinValue="0" MaxValue="100" Decimals="1"
+                                        Value="{ui:TagBinding SoilHumidity}" />
+                    <!-- 3. 降水量: 0 ~ 100 mm -->
+                    <controls:RingGauge Label="降水量" Unit="mm" MinValue="0" MaxValue="100" Decimals="1"
+                                        Value="{ui:TagBinding Precipitation}" />
+                    <!-- 4. 实际用水: 0 ~ 500 m³（修 P7：0~500 量程下 85.4 指在 17% 位置） -->
+                    <controls:RingGauge Label="实际用水" Unit="m³" MinValue="0" MaxValue="500" Decimals="1"
+                                        Value="{ui:TagBinding ActualWaters}" />
+                </UniformGrid>
             </controls:CardView>
 
             <!-- ═══ 通信控制卡 (1102,648,384,180)——两态（T3.3） ═══ -->

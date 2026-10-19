@@ -53,6 +53,10 @@ namespace WaterSystem.Wpf.Tests
                     Assert.Equal(3, pumps.Count);
                     var knobs = FindLogicalChildren<URotarySwitchW>(canvas).ToList();
                     Assert.Equal(3, knobs.Count);
+
+                    // T4.5 验收：包含 5 个 RingGauge 环形仪表（环境卡 4 个 + 用水卡 1 个）
+                    var rings = FindLogicalChildren<RingGauge>(canvas).ToList();
+                    Assert.Equal(5, rings.Count);
                     result = (true, "");
                 }
                 catch (Exception ex)
