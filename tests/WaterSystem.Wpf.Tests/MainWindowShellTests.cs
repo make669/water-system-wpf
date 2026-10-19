@@ -34,6 +34,8 @@ namespace WaterSystem.Wpf.Tests
                     var (w, h) = MainWindow.SizeFor(SystemParameters.WorkArea.Width, SystemParameters.WorkArea.Height);
                     Assert.True(w <= SystemParameters.WorkArea.Width + 1, $"宽溢出: {w}");
                     Assert.True(h <= SystemParameters.WorkArea.Height + 1, $"高溢出: {h}");
+                    Assert.True(window.Left >= SystemParameters.WorkArea.Left, $"Left 超出屏幕左边界: {window.Left}");
+                    Assert.True(window.Top >= SystemParameters.WorkArea.Top, $"Top 超出屏幕上边界: {window.Top}");
                     var vb = Assert.IsType<System.Windows.Controls.Viewbox>(window.Content);
                     var canvas = Assert.IsType<System.Windows.Controls.Canvas>(vb.Child);
                     Assert.Equal(1492, canvas.Width);
