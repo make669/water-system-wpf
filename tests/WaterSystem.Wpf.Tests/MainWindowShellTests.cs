@@ -57,6 +57,10 @@ namespace WaterSystem.Wpf.Tests
                     // T4.5 验收：包含 5 个 RingGauge 环形仪表（环境卡 4 个 + 用水卡 1 个）
                     var rings = FindLogicalChildren<RingGauge>(canvas).ToList();
                     Assert.Equal(5, rings.Count);
+
+                    // T4.6 验收：包含 7 个 AlarmBadgeChip（顶栏未确认徽标 1 个 + 3 组泵卡运行/故障双徽标 6 个）
+                    var badges = FindLogicalChildren<AlarmBadgeChip>(canvas).ToList();
+                    Assert.Equal(7, badges.Count);
                     result = (true, "");
                 }
                 catch (Exception ex)

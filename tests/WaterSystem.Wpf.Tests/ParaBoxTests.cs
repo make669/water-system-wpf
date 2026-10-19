@@ -33,5 +33,34 @@ namespace WaterSystem.Wpf.Tests
             Assert.True(t.Join(10_000), "ParaBox 构造超时");
             Assert.Null(error);
         }
+
+        [Fact]
+        public void ParaBox_超阈值报警变色()
+        {
+            ParaBox? box = null;
+            Exception? error = null;
+            var t = new Thread(() =>
+            {
+                try
+                {
+                    box = new ParaBox { Decimals = 2, HighThreshold = 10.0, LowThreshold = 1.0 };
+                    box.Value = 5.0;
+                    Assert.Equal("5.00", box.DisplayText);
+
+                    // 超高限 12.0 > 10.0
+                    box.Value = 12.0;
+                    Assert.Equal("12.00", box.DisplayText);
+
+                    // 低于低限 0.5 < 1.0
+                    box.Value = 0.5;
+                    Assert.Equal("0.50", box.DisplayText);
+                }
+                catch (Exception ex) { error = ex; }
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            Assert.True(t.Join(10_000), "ParaBox 构造超时");
+            Assert.Null(error);
+        }
     }
 }

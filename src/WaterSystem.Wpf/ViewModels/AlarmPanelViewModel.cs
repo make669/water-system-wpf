@@ -34,7 +34,21 @@ namespace WaterSystem.Wpf.ViewModels
         public int OpenCount { get => _openCount; private set { _openCount = value; PropertyChanged?.Invoke(this, new(nameof(OpenCount))); } }
 
         private int _unackCount;
-        public int UnackCount { get => _unackCount; private set { _unackCount = value; PropertyChanged?.Invoke(this, new(nameof(UnackCount))); } }
+        public int UnackCount
+        {
+            get => _unackCount;
+            private set
+            {
+                if (_unackCount == value) return;
+                _unackCount = value;
+                PropertyChanged?.Invoke(this, new(nameof(UnackCount)));
+                PropertyChanged?.Invoke(this, new(nameof(UnackBadgeText)));
+                PropertyChanged?.Invoke(this, new(nameof(UnackBadgeTone)));
+            }
+        }
+
+        public string UnackBadgeText => UnackCount > 0 ? $"⚠ 未确认 {UnackCount}" : "● 正常";
+        public Controls.AlarmBadgeTone UnackBadgeTone => UnackCount > 0 ? Controls.AlarmBadgeTone.Alarm : Controls.AlarmBadgeTone.Off;
 
         public AlarmRowVm? Selected { get => _selected; set { _selected = value; PropertyChanged?.Invoke(this, new(nameof(Selected))); } }
 

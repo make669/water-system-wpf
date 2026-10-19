@@ -35,6 +35,12 @@ namespace WaterSystem.Wpf.Controls
                 p.Alarm = (double)e.NewValue > 0.5;
             }));
 
+        public static readonly DependencyProperty HighThresholdProperty = DependencyProperty.Register(
+            nameof(HighThreshold), typeof(double?), typeof(ParaBox), new PropertyMetadata(null, OnTextPartsChanged));
+
+        public static readonly DependencyProperty LowThresholdProperty = DependencyProperty.Register(
+            nameof(LowThreshold), typeof(double?), typeof(ParaBox), new PropertyMetadata(null, OnTextPartsChanged));
+
         private readonly TextBlock _title = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _value = new() { FontSize = 20, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _unit = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 2, 0, 0) };
@@ -45,6 +51,8 @@ namespace WaterSystem.Wpf.Controls
         public int Decimals { get => (int)GetValue(DecimalsProperty); set => SetValue(DecimalsProperty, value); }
         public bool Alarm { get => (bool)GetValue(AlarmProperty); set => SetValue(AlarmProperty, value); }
         public double AlarmValue { get => (double)GetValue(AlarmValueProperty); set => SetValue(AlarmValueProperty, value); }
+        public double? HighThreshold { get => (double?)GetValue(HighThresholdProperty); set => SetValue(HighThresholdProperty, value); }
+        public double? LowThreshold { get => (double?)GetValue(LowThresholdProperty); set => SetValue(LowThresholdProperty, value); }
 
         /// <summary>格式化后的显示文本（单测断言面）。</summary>
         public string DisplayText => _value.Text;
@@ -69,7 +77,12 @@ namespace WaterSystem.Wpf.Controls
             _title.Foreground = ResourceBrush("TextSecondary");
             // ValueFormatter：小数位 = 10^-Decimals 对应的 Scale 有效位（T3.2 纯函数复用）
             _value.Text = ValueFormatter.Format(Value, Math.Pow(10, -Decimals));
-            _value.Foreground = ResourceBrush(Alarm ? "Alarm" : "TextPrimary");
+
+            bool isAlarm = Alarm;
+            if (HighThreshold.HasValue && Value > HighThreshold.Value) isAlarm = true;
+            if (LowThreshold.HasValue && Value < LowThreshold.Value) isAlarm = true;
+
+            _value.Foreground = ResourceBrush(isAlarm ? "Alarm" : "TextPrimary");
             _unit.Text = Unit;
             _unit.Foreground = ResourceBrush("TextSecondary");
         }

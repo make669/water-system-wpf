@@ -110,5 +110,53 @@ namespace WaterSystem.Wpf.Tests
             panel.Refresh();
             Assert.Equal(0, panel.Rows.Count);
         }
+
+        [Fact]
+        public void T4_6_Surge三处同时可见_顶栏报警卡过程图描红_P4关闭()
+        {
+            var center = new AlarmCenter(_dbPath);
+            var vm = NewMain(center);
+            var panel = vm.AlarmPanel!;
+
+            // 1. 初始正常态：无报警，顶栏与报警卡为正常态，无过程图描红
+            Assert.Equal(0, vm.UnackCount);
+            Assert.Equal("● 正常", vm.UnackBadgeText);
+            Assert.Equal(Controls.AlarmBadgeTone.Off, vm.UnackBadgeTone);
+            Assert.False(vm.IsHighPressure);
+            Assert.Equal(0, panel.Rows.Count);
+
+            // 2. 模拟 surge 浪涌（压力 12.0 MPa > 10.0 MPa 阈值）
+            vm.ApplyData(Data(("MainOutPressure", 12.0)));
+
+            // 验收三处同时可见（P4 关闭）：
+            // ① 顶栏徽标可见：未确认数=1，AlarmBadgeChip 显示 "⚠ 未确认 1"，Tone 为 Alarm 红
+            Assert.Equal(1, vm.UnackCount);
+            Assert.Equal("⚠ 未确认 1", vm.UnackBadgeText);
+            Assert.Equal(Controls.AlarmBadgeTone.Alarm, vm.UnackBadgeTone);
+
+            // ② 实时报警卡可见：卡头未确认=1，行列表包含 "主管压力过高"，状态为 "报警中"（ToneKey=Alarm）
+            Assert.Equal(1, panel.UnackCount);
+            Assert.Equal("⚠ 未确认 1", panel.UnackBadgeText);
+            Assert.Equal(Controls.AlarmBadgeTone.Alarm, panel.UnackBadgeTone);
+            Assert.Single(panel.Rows);
+            Assert.Contains("主管压力过高", panel.Rows[0].Message);
+            Assert.Equal("报警中", panel.Rows[0].StateText);
+            Assert.Equal("Alarm", panel.Rows[0].ToneKey);
+
+            // ③ 过程图描红可见：主管压力超限标志 IsHighPressure=true
+            Assert.True(vm.IsHighPressure);
+
+            // 3. 浪涌解除且确认后恢复正常
+            vm.ApplyData(Data(("MainOutPressure", 0.35)));
+            panel.Selected = panel.Rows[0];
+            panel.AckSelectedCommand.Execute(null);
+            panel.Refresh();
+
+            Assert.False(vm.IsHighPressure);
+            Assert.Equal(0, vm.UnackCount);
+            Assert.Equal("● 正常", vm.UnackBadgeText);
+            Assert.Equal(Controls.AlarmBadgeTone.Off, vm.UnackBadgeTone);
+            Assert.Empty(panel.Rows);
+        }
     }
 }

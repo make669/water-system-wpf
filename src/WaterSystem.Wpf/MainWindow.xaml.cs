@@ -57,6 +57,21 @@ namespace WaterSystem.Wpf
                 DragMove();
         }
 
+        /// <summary>顶栏报警徽标点击：聚焦实时报警卡（修 P4/P12）。</summary>
+        private void UnackBadge_Click(object sender, MouseButtonEventArgs e)
+        {
+            AlarmCard?.Focus();
+        }
+
+        /// <summary>报警列表双击行：确认选中报警（修 P12，ISA-18.2 确认链路）。</summary>
+        private void AlarmListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (DataContext is ViewModels.MainViewModel vm && vm.AlarmPanel?.AckSelectedCommand.CanExecute(null) == true)
+            {
+                vm.AlarmPanel.AckSelectedCommand.Execute(null);
+            }
+        }
+
         private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
         /// <summary>日志行着色（唯一出处：LogRowStyler，主卡与 F12 共用——T6.1）。</summary>
