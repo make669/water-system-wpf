@@ -623,29 +623,35 @@
                 </Grid>
             </controls:CardView>
 
-            <!-- ═══ 运行日志卡 (0,836,1492,164)——T6.1 着色唯一出处 ═══ -->
-            <controls:CardView Canvas.Left="0" Canvas.Top="836" Width="1492" Height="164" Title="运行日志">
-                <Grid Margin="8,2,8,2">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="F12 全量日志" FontSize="11"
-                               Foreground="{DynamicResource TextSecondary}" Margin="4,0,4,2"
-                               HorizontalAlignment="Right" />
-                    <DataGrid Grid.Row="1" x:Name="LogGrid" ItemsSource="{Binding Log.Entries}"
+            <!-- ═══ 运行日志卡 (0,836,1492,164)——T4.8 加高≥6行 + 列头防折行（P11 关闭） ═══ -->
+            <Border Canvas.Left="0" Canvas.Top="836" Width="1492" Height="164"
+                    Background="{DynamicResource BgCard}"
+                    BorderBrush="{DynamicResource Stroke}"
+                    BorderThickness="1" CornerRadius="8">
+                <Grid Margin="10,2,10,2">
+                    <DataGrid x:Name="LogGrid" ItemsSource="{Binding Log.Entries}"
                               AutoGenerateColumns="False" HeadersVisibility="Column"
                               EnableRowVirtualization="False" IsReadOnly="True"
                               SelectionMode="Single" LoadingRow="LogGrid_LoadingRow"
-                              RowHeight="22" ColumnHeaderHeight="26">
+                              RowHeight="22" ColumnHeaderHeight="26"
+                              Background="Transparent" BorderThickness="0"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="时间" Binding="{Binding Time, StringFormat=HH:mm:ss}" Width="100" />
                             <DataGridTextColumn Header="级别" Binding="{Binding Level}" Width="64" />
                             <DataGridTextColumn Header="消息" Binding="{Binding Message}" Width="*" />
                         </DataGrid.Columns>
                     </DataGrid>
+                    <!-- 右上角 [F12 全量日志] 快捷入口（细则 §4.1 日志卡） -->
+                    <Button Content="[F12 全量日志]" Click="OpenLogViewer_Click"
+                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Margin="0,2,8,0" Height="22"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="{DynamicResource Accent}" FontSize="11"
+                            Cursor="Hand" />
                 </Grid>
-            </controls:CardView>
+            </Border>
         </Canvas>
     </Viewbox>
 </Window>

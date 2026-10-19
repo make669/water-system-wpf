@@ -61,6 +61,14 @@ namespace WaterSystem.Wpf.Tests
                     // T4.6 验收：包含 7 个 AlarmBadgeChip（顶栏未确认徽标 1 个 + 3 组泵卡运行/故障双徽标 6 个）
                     var badges = FindLogicalChildren<AlarmBadgeChip>(canvas).ToList();
                     Assert.Equal(7, badges.Count);
+
+                    // T4.8 验收：日志卡 RowHeight=22、ColumnHeaderHeight=26，级别列宽 64 单行不折行（P11 关闭）
+                    var grid = Assert.Single(FindLogicalChildren<System.Windows.Controls.DataGrid>(canvas));
+                    Assert.Equal(22.0, grid.RowHeight);
+                    Assert.Equal(26.0, grid.ColumnHeaderHeight);
+                    var levelCol = grid.Columns.FirstOrDefault(c => (string)c.Header == "级别");
+                    Assert.NotNull(levelCol);
+                    Assert.Equal(64.0, levelCol.Width.Value);
                     result = (true, "");
                 }
                 catch (Exception ex)

@@ -72,6 +72,8 @@ namespace WaterSystem.Wpf
             }
         }
 
+        private void OpenLogViewer_Click(object sender, RoutedEventArgs e) => OpenLogViewer();
+
         private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
         /// <summary>日志行着色（唯一出处：LogRowStyler，主卡与 F12 共用——T6.1）。</summary>
