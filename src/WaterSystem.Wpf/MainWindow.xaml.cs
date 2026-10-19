@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Intelligent_water_storage_system.Services;
 
 namespace WaterSystem.Wpf
@@ -18,7 +19,10 @@ namespace WaterSystem.Wpf
         public MainWindow()
         {
             InitializeComponent();
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            FitToWorkArea();
             SourceInitialized += (_, _) => FitToWorkArea();
+            Loaded += (_, _) => FitToWorkArea();
             PreviewKeyDown += (_, e) =>
             {
                 if (e.Key == Key.F12) { OpenLogViewer(); e.Handled = true; }
@@ -26,11 +30,15 @@ namespace WaterSystem.Wpf
         }
 
         /// <summary>Q1=B（Viewbox 矢量等比缩放）：窗口尺寸 = 设计稿 × min(工作区/设计稿, 1.0)。
-        /// 不放大只缩小；内容在 Viewbox 内无损等比，标题栏/关闭钮任何屏幕可达（修 P17 实锤）。</summary>
-        private void FitToWorkArea()
+        /// 居中放置在工作区内，顶部贴合不超出屏幕边界，标题栏/关闭钮任何屏幕可达（修 P17 实锤）。</summary>
+        public void FitToWorkArea()
         {
             var work = SystemParameters.WorkArea;
-            (Width, Height) = SizeFor(work.Width, work.Height);
+            var (w, h) = SizeFor(work.Width, work.Height);
+            Width = w;
+            Height = h;
+            Left = Math.Max(work.Left, work.Left + (work.Width - w) / 2);
+            Top = Math.Max(work.Top, work.Top + (work.Height - h) / 2);
         }
 
         /// <summary>尺寸计算纯函数（可测）：k = min(工作区宽/1492, 工作区高/1000, 1.0)，不放大只缩小。</summary>
@@ -53,8 +61,41 @@ namespace WaterSystem.Wpf
         /// <summary>顶栏拖动（对应源 WmNclButtonDown/DragMove 语义，D6）。</summary>
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
+            if (e.ButtonState == MouseButtonState.Pressed && e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (e.OriginalSource is DependencyObject d && IsInteractiveElement(d))
+                    return;
+                try { DragMove(); } catch { }
+            }
+        }
+
+        /// <summary>允许在整个主窗空白背景区拖动无边框窗口。</summary>
+        protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
+        {
+            base.OnMouseLeftButtonDown(e);
+            if (e.ButtonState == MouseButtonState.Pressed && e.LeftButton == MouseButtonState.Pressed)
+            {
+                if (e.OriginalSource is DependencyObject d && IsInteractiveElement(d))
+                    return;
+                try { DragMove(); } catch { }
+            }
+        }
+
+        private static bool IsInteractiveElement(DependencyObject? obj)
+        {
+            while (obj != null && obj is not Window)
+            {
+                if (obj is Button || obj is TextBox || obj is ListBox || obj is DataGrid ||
+                    obj is ScrollViewer || obj is System.Windows.Controls.Primitives.ToggleButton ||
+                    obj is Controls.AlarmBadgeChip || obj is Controls.USwitchW || obj is Controls.URotarySwitchW)
+                    return true;
+
+                if (obj is Visual || obj is System.Windows.Media.Media3D.Visual3D)
+                    obj = VisualTreeHelper.GetParent(obj);
+                else
+                    obj = LogicalTreeHelper.GetParent(obj);
+            }
+            return false;
         }
 
         /// <summary>顶栏报警徽标点击：聚焦实时报警卡（修 P4/P12）。</summary>

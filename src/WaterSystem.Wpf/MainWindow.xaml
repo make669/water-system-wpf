@@ -5,7 +5,7 @@
         xmlns:controls="clr-namespace:WaterSystem.Wpf.Controls"
         Title="智能水箱上位机"
         Width="1492" Height="1000"
-        WindowStartupLocation="CenterScreen"
+        WindowStartupLocation="Manual"
         WindowStyle="None"
         ResizeMode="NoResize"
         Background="{DynamicResource BgWindow}"
