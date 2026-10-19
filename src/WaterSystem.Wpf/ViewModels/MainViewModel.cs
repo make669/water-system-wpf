@@ -181,15 +181,17 @@ namespace WaterSystem.Wpf.ViewModels
         }
 
         /// <summary>
-        /// 水流管道流动状态（B8 水路因果 + T4.2 管廊布线）：
+        /// 水流管道流动状态（B8 水路因果 + T4.2 管廊布线 + 支阀物理因果）：
         /// 进水段（MainValve 组）= PLC 连接且主阀开；
-        /// 泵支路（PumpN 组）= 进水段流动 且 对应泵运行反馈。
+        /// 泵支路（PumpN 组）= 进水段流动 且 对应支阀开 且 对应泵运行反馈；
+        /// 汇管输出（下管廊）= 进水段流动 且 至少有一路泵支路在有效供水。
         /// 离线时全部为 false（ResetProcessGraphics 语义）。
         /// </summary>
         public bool IsPipeMainActive => ConnState == CommState.Connected && TagValues["MainValve"] > 0;
-        public bool IsPipePump1Active => IsPipeMainActive && TagValues["Pump1_Run"] > 0;
-        public bool IsPipePump2Active => IsPipeMainActive && TagValues["Pump2_Run"] > 0;
-        public bool IsPipePump3Active => IsPipeMainActive && TagValues["Pump3_Run"] > 0;
+        public bool IsPipePump1Active => IsPipeMainActive && TagValues["Valve1"] > 0 && TagValues["Pump1_Run"] > 0;
+        public bool IsPipePump2Active => IsPipeMainActive && TagValues["Valve2"] > 0 && TagValues["Pump2_Run"] > 0;
+        public bool IsPipePump3Active => IsPipeMainActive && TagValues["Valve3"] > 0 && TagValues["Pump3_Run"] > 0;
+        public bool IsPipeCollectorActive => ConnState == CommState.Connected && (IsPipePump1Active || IsPipePump2Active || IsPipePump3Active);
 
         public void NotifyPipeStates()
         {
@@ -197,6 +199,7 @@ namespace WaterSystem.Wpf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump1Active)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump2Active)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump3Active)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipeCollectorActive)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHighPressure)));
         }
 

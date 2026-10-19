@@ -355,7 +355,7 @@
                     <!-- ═══ 下管廊 y=416：汇管与主管输出 ═══ -->
                     <controls:PipeLine Canvas.Left="465" Canvas.Top="413" Width="585" Height="6"
                                        Orientation="Horizontal" Direction="LeftToRight"
-                                       Active="{Binding IsPipeMainActive}" />
+                                       Active="{Binding IsPipeCollectorActive}" />
                     <TextBlock Canvas.Left="960" Canvas.Top="424" Text="汇管 → 主管输出" FontSize="11"
                                Foreground="{DynamicResource TextSecondary}" />
 

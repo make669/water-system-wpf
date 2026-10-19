@@ -1,3 +1,4 @@
+using System;
 using Intelligent_water_storage_system.Model;
 
 namespace Intelligent_water_storage_system.Simulation
@@ -11,6 +12,7 @@ namespace Intelligent_water_storage_system.Simulation
     ///                 实际用水量缓慢增长（《界面定稿设计》3.4：原 ±1.5 时谷值恰为 1.0m，浮点擦边偶发误报低水位）
     ///   S3 泵联动   —— 自动：写 PumpN_Run=ON → 延迟 3s → F/P/S 在 3s 内缓升至额定值；
     ///                 OFF → 3s 内缓降回 0（模拟变频器加速/自由停车）
+    ///                 且与 MainValve、ValveN 建立真实水动力学因果（开阀出水/闭阀憋压流量归零）
     ///   S4 故障注入 —— fault N on/off 置位/复位 PumpN_Fault
     ///   S5 压力浪涌 —— surge on 时主管压力阶跃到 12.0Mpa（超上限 10，触发报警），off 恢复 0.35
     ///
@@ -34,6 +36,7 @@ namespace Intelligent_water_storage_system.Simulation
         // 泵联动状态（下标 = 泵编号-1）
         private readonly bool[] _pumpOn = new bool[3];
         private readonly double[] _pumpProgress = new double[3];
+        private readonly double[] _lastPumpProgress = new double[3];
         private readonly int[] _pumpDelayTicks = new int[3];
 
         // 关联标签（启动时从标签表解析，缺失则对应行为静默跳过）
@@ -41,6 +44,11 @@ namespace Intelligent_water_storage_system.Simulation
         private readonly TagAddress? _actual;
         private readonly TagAddress? _pressure;
         private readonly TagAddress?[][] _pumpTags;   // [泵][F,P,S]
+        private readonly TagAddress?[] _flowTags = new TagAddress?[3];
+        private readonly TagAddress?[] _pressureTags = new TagAddress?[3];
+        private readonly TagAddress?[] _valveTags = new TagAddress?[3];
+        private readonly TagAddress? _mainValve;
+        private readonly TagAddress? _mainOutFlow;
 
         private const double RatedFrequency = 50.0;   // Hz
         private const double RatedPower = 75.0;       // KW
@@ -54,6 +62,9 @@ namespace Intelligent_water_storage_system.Simulation
             _water = store.FindTag("CurWaterPos");
             _actual = store.FindTag("ActualWaters");
             _pressure = store.FindTag("MainOutPressure");
+            _mainValve = store.FindTag("MainValve");
+            _mainOutFlow = store.FindTag("MainOutFlow");
+
             _pumpTags = new TagAddress?[3][];
             for (int i = 0; i < 3; i++)
             {
@@ -61,6 +72,9 @@ namespace Intelligent_water_storage_system.Simulation
                 _pumpTags[i][0] = store.FindTag($"Pump{i + 1}_F");
                 _pumpTags[i][1] = store.FindTag($"Pump{i + 1}_P");
                 _pumpTags[i][2] = store.FindTag($"Pump{i + 1}_S");
+                _flowTags[i] = store.FindTag($"Flow-{i + 1}");
+                _pressureTags[i] = store.FindTag($"Pressure-{i + 1}");
+                _valveTags[i] = store.FindTag($"Valve{i + 1}");
             }
             _timer = new System.Threading.Timer(_ => Tick(), null, 500, 500);
         }
@@ -91,15 +105,16 @@ namespace Intelligent_water_storage_system.Simulation
             lock (_gate) _surge = on;
         }
 
-        /// <summary>FC05 写 PumpN_Run 线圈时由协议层回调，驱动泵联动</summary>
+        /// <summary>FC05 写线圈时由协议层回调，驱动泵联动与水动力联动</summary>
         public void NotifyCoilWrite(int address, bool on)
         {
             var tag = _store.FindCoilOwner(address);
-            if (tag == null || !tag.TagName.StartsWith("Pump") || !tag.TagName.EndsWith("_Run"))
-                return;
-            if (!int.TryParse(tag.TagName.Substring(4, 1), out int pumpNo) || pumpNo is < 1 or > 3)
-                return;
-            SetPumpTarget(pumpNo, on);
+            if (tag == null) return;
+            if (tag.TagName.StartsWith("Pump") && tag.TagName.EndsWith("_Run"))
+            {
+                if (int.TryParse(tag.TagName.Substring(4, 1), out int pumpNo) && pumpNo is >= 1 and <= 3)
+                    SetPumpTarget(pumpNo, on);
+            }
         }
 
         /// <summary>设定某台泵的目标运行状态（触发缓升/缓降）</summary>
@@ -115,7 +130,7 @@ namespace Intelligent_water_storage_system.Simulation
             }
         }
 
-        /// <summary>500ms 周期 tick：推进所有剧本</summary>
+        /// <summary>500ms 周期 tick：推进所有剧本与水动力学计算</summary>
         private void Tick()
         {
             try
@@ -144,7 +159,11 @@ namespace Intelligent_water_storage_system.Simulation
                     }
                     _lastSurge = _surge;
 
-                    // S3 泵联动：延迟 → 缓升/缓降（只在进度变化的那一拍写，避免覆盖手动 set）
+                    // S3 泵联动与支路水动力联动：延迟 → 缓升/缓降
+                    bool anyPumpActive = false;
+                    double totalFlow = 0;
+                    bool mainValveOpen = _mainValve != null && _store.ReadEngineering(_mainValve) > 0;
+
                     for (int i = 0; i < 3; i++)
                     {
                         if (_pumpOn[i])
@@ -161,13 +180,47 @@ namespace Intelligent_water_storage_system.Simulation
                             _pumpProgress[i] = Math.Max(0.0, _pumpProgress[i] - 1.0 / RampTicks);
                         }
 
-                        if (_pumpProgress[i] > 0)
+                        if (_pumpProgress[i] > 0 || _lastPumpProgress[i] > 0)
                         {
+                            anyPumpActive = true;
                             double p = _pumpProgress[i];
                             if (_pumpTags[i][0] != null) _store.WriteEngineering(_pumpTags[i][0]!, RatedFrequency * p);
                             if (_pumpTags[i][1] != null) _store.WriteEngineering(_pumpTags[i][1]!, RatedPower * p);
                             if (_pumpTags[i][2] != null) _store.WriteEngineering(_pumpTags[i][2]!, RatedSpeed * p);
+
+                            // 支阀与支路水动力联动
+                            bool valveOpen = _valveTags[i] != null && _store.ReadEngineering(_valveTags[i]!) > 0;
+                            if (p > 0.05)
+                            {
+                                if (valveOpen && mainValveOpen)
+                                {
+                                    // 正常供水状态：主阀与支阀均打开，支管建立正常流量与工作压力
+                                    double branchFlow = Math.Round(15.0 * p, 1);
+                                    double branchPressure = Math.Round(0.35 * p, 2);
+                                    if (_flowTags[i] != null) _store.WriteEngineering(_flowTags[i]!, branchFlow);
+                                    if (_pressureTags[i] != null) _store.WriteEngineering(_pressureTags[i]!, branchPressure);
+                                    totalFlow += branchFlow;
+                                }
+                                else
+                                {
+                                    // 闭阀憋压状态（Deadhead）：支阀或主阀关闭，无法建立流量，泵出口压力上升至憋压值 0.65Mpa
+                                    if (_flowTags[i] != null) _store.WriteEngineering(_flowTags[i]!, 0.0);
+                                    if (_pressureTags[i] != null) _store.WriteEngineering(_pressureTags[i]!, Math.Round(0.65 * p, 2));
+                                }
+                            }
+                            else
+                            {
+                                // 停机态
+                                if (_flowTags[i] != null) _store.WriteEngineering(_flowTags[i]!, 0.0);
+                                if (_pressureTags[i] != null) _store.WriteEngineering(_pressureTags[i]!, 0.0);
+                            }
                         }
+                        _lastPumpProgress[i] = _pumpProgress[i];
+                    }
+
+                    if (anyPumpActive && _mainOutFlow != null)
+                    {
+                        _store.WriteEngineering(_mainOutFlow, Math.Round(totalFlow, 1));
                     }
                 }
             }

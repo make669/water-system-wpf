@@ -133,31 +133,42 @@ namespace WaterSystem.Wpf.Tests
             Assert.False(vm.IsPipePump1Active);
             Assert.False(vm.IsPipePump2Active);
             Assert.False(vm.IsPipePump3Active);
+            Assert.False(vm.IsPipeCollectorActive);
 
             // 建立连接
             vm.OnConnectionChanged(true);
             Assert.Equal(CommState.Connected, vm.ConnState);
 
-            // 态 2：泵转无阀（MainValve=0, Pump1_Run=1）——B8 因果律：无主进水，管路不流动
-            vm.ApplyData(Data(("MainValve", 0), ("Pump1_Run", 1)));
+            // 态 2：泵转无主进水（MainValve=0, Pump1_Run=1, Valve1=1）——B8 因果律：无主进水，管路不流动
+            vm.ApplyData(Data(("MainValve", 0), ("Pump1_Run", 1), ("Valve1", 1)));
             Assert.False(vm.IsPipeMainActive);
             Assert.False(vm.IsPipePump1Active);
             Assert.False(vm.IsPipePump2Active);
             Assert.False(vm.IsPipePump3Active);
+            Assert.False(vm.IsPipeCollectorActive);
 
-            // 态 3：开阀泵停（MainValve=1, Pump1~3=0）——进水横管/供水短柱/汇管流动，泵支路不流动
-            vm.ApplyData(Data(("MainValve", 1), ("Pump1_Run", 0), ("Pump2_Run", 0), ("Pump3_Run", 0)));
+            // 态 3：开主阀但泵停（MainValve=1, Pump1~3=0, Valve1~3=1）——进水横管流动，泵支路与汇管不流动
+            vm.ApplyData(Data(("MainValve", 1), ("Pump1_Run", 0), ("Pump2_Run", 0), ("Pump3_Run", 0),
+                              ("Valve1", 1), ("Valve2", 1), ("Valve3", 1)));
             Assert.True(vm.IsPipeMainActive);
             Assert.False(vm.IsPipePump1Active);
             Assert.False(vm.IsPipePump2Active);
             Assert.False(vm.IsPipePump3Active);
+            Assert.False(vm.IsPipeCollectorActive);
 
-            // 态 4：开阀泵转（MainValve=1, Pump1_Run=1, Pump2=0）——主管与1#支路流动，2#3#支路不流动
-            vm.ApplyData(Data(("MainValve", 1), ("Pump1_Run", 1), ("Pump2_Run", 0), ("Pump3_Run", 0)));
+            // 态 3b：开主阀开泵但支阀关闭（MainValve=1, Pump1_Run=1, Valve1=0）——支阀切断，支路与汇管不流动
+            vm.ApplyData(Data(("MainValve", 1), ("Pump1_Run", 1), ("Valve1", 0)));
+            Assert.True(vm.IsPipeMainActive);
+            Assert.False(vm.IsPipePump1Active);
+            Assert.False(vm.IsPipeCollectorActive);
+
+            // 态 4：开主阀+开支阀+开泵（MainValve=1, Pump1_Run=1, Valve1=1, Pump2=0）——主管、1#支路及汇管输出流动，2#3#支路不流动
+            vm.ApplyData(Data(("MainValve", 1), ("Pump1_Run", 1), ("Valve1", 1), ("Pump2_Run", 0), ("Pump3_Run", 0)));
             Assert.True(vm.IsPipeMainActive);
             Assert.True(vm.IsPipePump1Active);
             Assert.False(vm.IsPipePump2Active);
             Assert.False(vm.IsPipePump3Active);
+            Assert.True(vm.IsPipeCollectorActive);
 
             // 态 5：断线全停全灭（ResetProcessGraphics）——即使断线前开阀开泵，断线后管道全部停止流动
             vm.OnConnectionChanged(false);
@@ -165,6 +176,7 @@ namespace WaterSystem.Wpf.Tests
             Assert.False(vm.IsPipePump1Active);
             Assert.False(vm.IsPipePump2Active);
             Assert.False(vm.IsPipePump3Active);
+            Assert.False(vm.IsPipeCollectorActive);
         }
     }
 }
