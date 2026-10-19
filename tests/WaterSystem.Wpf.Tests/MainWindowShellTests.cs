@@ -8,6 +8,7 @@ namespace WaterSystem.Wpf.Tests
 {
     /// <summary>T2.3/T4 验收：主窗壳（Q1=B：Viewbox 矢量等比，窗口自适应工作区；设计稿画布 1492×1000 不变）。
     /// DependencyObject 属性必须在创建它的 STA 线程上读取。</summary>
+    [Collection("UiDispatcher")]
     public class MainWindowShellTests
     {
         [Theory]
@@ -46,6 +47,12 @@ namespace WaterSystem.Wpf.Tests
                     // T4.3 验收：工艺总览卡内包含 LevelTank 水池
                     var tank = Assert.Single(FindLogicalChildren<LevelTank>(canvas));
                     Assert.NotNull(tank);
+
+                    // T4.4 验收：包含 3 组泵卡自绘控件（3 个 PumpGraphic，3 个 URotarySwitchW）
+                    var pumps = FindLogicalChildren<PumpGraphic>(canvas).ToList();
+                    Assert.Equal(3, pumps.Count);
+                    var knobs = FindLogicalChildren<URotarySwitchW>(canvas).ToList();
+                    Assert.Equal(3, knobs.Count);
                     result = (true, "");
                 }
                 catch (Exception ex)

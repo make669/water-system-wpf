@@ -27,6 +27,14 @@ namespace WaterSystem.Wpf.Controls
         public static readonly DependencyProperty AlarmProperty = DependencyProperty.Register(
             nameof(Alarm), typeof(bool), typeof(ParaBox), new PropertyMetadata(false, OnTextPartsChanged));
 
+        public static readonly DependencyProperty AlarmValueProperty = DependencyProperty.Register(
+            nameof(AlarmValue), typeof(double), typeof(ParaBox),
+            new PropertyMetadata(0.0, (d, e) =>
+            {
+                var p = (ParaBox)d;
+                p.Alarm = (double)e.NewValue > 0.5;
+            }));
+
         private readonly TextBlock _title = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _value = new() { FontSize = 20, FontWeight = FontWeights.SemiBold, VerticalAlignment = VerticalAlignment.Center };
         private readonly TextBlock _unit = new() { FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 2, 0, 0) };
@@ -36,6 +44,7 @@ namespace WaterSystem.Wpf.Controls
         public string Unit { get => (string)GetValue(UnitProperty); set => SetValue(UnitProperty, value); }
         public int Decimals { get => (int)GetValue(DecimalsProperty); set => SetValue(DecimalsProperty, value); }
         public bool Alarm { get => (bool)GetValue(AlarmProperty); set => SetValue(AlarmProperty, value); }
+        public double AlarmValue { get => (double)GetValue(AlarmValueProperty); set => SetValue(AlarmValueProperty, value); }
 
         /// <summary>格式化后的显示文本（单测断言面）。</summary>
         public string DisplayText => _value.Text;
