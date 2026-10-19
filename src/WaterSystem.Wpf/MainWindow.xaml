@@ -131,26 +131,224 @@
                                        Orientation="Vertical" Direction="TopToBottom"
                                        Active="{Binding IsPipeMainActive}" />
 
-                    <!-- ═══ 泵列示意区 (y: 36..392，卡内纵管) ═══ -->
-                    <controls:PipeLine Canvas.Left="465" Canvas.Top="36" Width="6" Height="300"
+                    <!-- ═══ 1# 泵卡（卡中卡，240×356，设计书 §2.3 / T4.4） ═══ -->
+                    <controls:CardView Canvas.Left="324" Canvas.Top="36" Width="240" Height="356" Title="1# 水泵">
+                        <controls:CardView.Badge>
+                            <controls:AlarmBadgeChip Value="{ui:TagBinding Pump1_Fault}"
+                                                     ActiveText="▲ 故障" InactiveText=""
+                                                     ActiveTone="Alarm" InactiveTone="Off" />
+                        </controls:CardView.Badge>
+                        <Canvas Width="218" Height="314">
+                            <!-- 启停旋钮 -->
+                            <controls:URotarySwitchW Canvas.Left="12" Canvas.Top="8"
+                                                     SwitchState="{Binding ControlVm.SwitchStates[Pump1_Run]}"
+                                                     Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                     CommandParameter="Pump1_Run" />
+                            <TextBlock Canvas.Left="26" Canvas.Top="66" Text="启停" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondary}" />
+
+                            <!-- 泵图 -->
+                            <controls:PumpGraphic Canvas.Left="88" Canvas.Top="4"
+                                                  RunValue="{ui:TagBinding Pump1_Run}"
+                                                  FaultValue="{ui:TagBinding Pump1_Fault}" />
+
+                            <!-- F/P/S 键值三行 -->
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="92" Title="频率" Unit="Hz" Decimals="1"
+                                              Value="{ui:TagBinding Pump1_F}"
+                                              AlarmValue="{ui:TagBinding Pump1_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="124" Title="功率" Unit="kW" Decimals="1"
+                                              Value="{ui:TagBinding Pump1_P}"
+                                              AlarmValue="{ui:TagBinding Pump1_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="156" Title="转速" Unit="r/m" Decimals="0"
+                                              Value="{ui:TagBinding Pump1_S}"
+                                              AlarmValue="{ui:TagBinding Pump1_Fault}" />
+
+                            <!-- 双徽章 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="194" Orientation="Horizontal">
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump1_Run}"
+                                                         ActiveText="● 运行" InactiveText="● 停止"
+                                                         ActiveTone="Ok" InactiveTone="Off"
+                                                         Margin="0,0,8,0" />
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump1_Fault}"
+                                                         ActiveText="▲ 故障" InactiveText="● 正常"
+                                                         ActiveTone="Alarm" InactiveTone="Off" />
+                            </StackPanel>
+
+                            <!-- 控制开关：支管阀门与手自模式 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="230" Orientation="Horizontal">
+                                <TextBlock Text="支阀" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Valve1]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Valve1" />
+                            </StackPanel>
+                            <StackPanel Canvas.Left="12" Canvas.Top="264" Orientation="Horizontal">
+                                <TextBlock Text="手/自" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Pump1_Mode]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Pump1_Mode" />
+                            </StackPanel>
+                        </Canvas>
+                    </controls:CardView>
+
+                    <!-- ═══ 2# 泵卡（卡中卡，240×356，设计书 §2.3 / T4.4） ═══ -->
+                    <controls:CardView Canvas.Left="570" Canvas.Top="36" Width="240" Height="356" Title="2# 水泵">
+                        <controls:CardView.Badge>
+                            <controls:AlarmBadgeChip Value="{ui:TagBinding Pump2_Fault}"
+                                                     ActiveText="▲ 故障" InactiveText=""
+                                                     ActiveTone="Alarm" InactiveTone="Off" />
+                        </controls:CardView.Badge>
+                        <Canvas Width="218" Height="314">
+                            <!-- 启停旋钮 -->
+                            <controls:URotarySwitchW Canvas.Left="12" Canvas.Top="8"
+                                                     SwitchState="{Binding ControlVm.SwitchStates[Pump2_Run]}"
+                                                     Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                     CommandParameter="Pump2_Run" />
+                            <TextBlock Canvas.Left="26" Canvas.Top="66" Text="启停" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondary}" />
+
+                            <!-- 泵图 -->
+                            <controls:PumpGraphic Canvas.Left="88" Canvas.Top="4"
+                                                  RunValue="{ui:TagBinding Pump2_Run}"
+                                                  FaultValue="{ui:TagBinding Pump2_Fault}" />
+
+                            <!-- F/P/S 键值三行 -->
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="92" Title="频率" Unit="Hz" Decimals="1"
+                                              Value="{ui:TagBinding Pump2_F}"
+                                              AlarmValue="{ui:TagBinding Pump2_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="124" Title="功率" Unit="kW" Decimals="1"
+                                              Value="{ui:TagBinding Pump2_P}"
+                                              AlarmValue="{ui:TagBinding Pump2_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="156" Title="转速" Unit="r/m" Decimals="0"
+                                              Value="{ui:TagBinding Pump2_S}"
+                                              AlarmValue="{ui:TagBinding Pump2_Fault}" />
+
+                            <!-- 双徽章 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="194" Orientation="Horizontal">
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump2_Run}"
+                                                         ActiveText="● 运行" InactiveText="● 停止"
+                                                         ActiveTone="Ok" InactiveTone="Off"
+                                                         Margin="0,0,8,0" />
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump2_Fault}"
+                                                         ActiveText="▲ 故障" InactiveText="● 正常"
+                                                         ActiveTone="Alarm" InactiveTone="Off" />
+                            </StackPanel>
+
+                            <!-- 控制开关：支管阀门与手自模式 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="230" Orientation="Horizontal">
+                                <TextBlock Text="支阀" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Valve2]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Valve2" />
+                            </StackPanel>
+                            <StackPanel Canvas.Left="12" Canvas.Top="264" Orientation="Horizontal">
+                                <TextBlock Text="手/自" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Pump2_Mode]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Pump2_Mode" />
+                            </StackPanel>
+                        </Canvas>
+                    </controls:CardView>
+
+                    <!-- ═══ 3# 泵卡（卡中卡，240×356，设计书 §2.3 / T4.4） ═══ -->
+                    <controls:CardView Canvas.Left="816" Canvas.Top="36" Width="240" Height="356" Title="3# 水泵">
+                        <controls:CardView.Badge>
+                            <controls:AlarmBadgeChip Value="{ui:TagBinding Pump3_Fault}"
+                                                     ActiveText="▲ 故障" InactiveText=""
+                                                     ActiveTone="Alarm" InactiveTone="Off" />
+                        </controls:CardView.Badge>
+                        <Canvas Width="218" Height="314">
+                            <!-- 启停旋钮 -->
+                            <controls:URotarySwitchW Canvas.Left="12" Canvas.Top="8"
+                                                     SwitchState="{Binding ControlVm.SwitchStates[Pump3_Run]}"
+                                                     Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                              RelativeSource={RelativeSource AncestorType=Window}}"
+                                                     CommandParameter="Pump3_Run" />
+                            <TextBlock Canvas.Left="26" Canvas.Top="66" Text="启停" FontSize="11"
+                                       Foreground="{DynamicResource TextSecondary}" />
+
+                            <!-- 泵图 -->
+                            <controls:PumpGraphic Canvas.Left="88" Canvas.Top="4"
+                                                  RunValue="{ui:TagBinding Pump3_Run}"
+                                                  FaultValue="{ui:TagBinding Pump3_Fault}" />
+
+                            <!-- F/P/S 键值三行 -->
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="92" Title="频率" Unit="Hz" Decimals="1"
+                                              Value="{ui:TagBinding Pump3_F}"
+                                              AlarmValue="{ui:TagBinding Pump3_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="124" Title="功率" Unit="kW" Decimals="1"
+                                              Value="{ui:TagBinding Pump3_P}"
+                                              AlarmValue="{ui:TagBinding Pump3_Fault}" />
+                            <controls:ParaBox Canvas.Left="12" Canvas.Top="156" Title="转速" Unit="r/m" Decimals="0"
+                                              Value="{ui:TagBinding Pump3_S}"
+                                              AlarmValue="{ui:TagBinding Pump3_Fault}" />
+
+                            <!-- 双徽章 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="194" Orientation="Horizontal">
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump3_Run}"
+                                                         ActiveText="● 运行" InactiveText="● 停止"
+                                                         ActiveTone="Ok" InactiveTone="Off"
+                                                         Margin="0,0,8,0" />
+                                <controls:AlarmBadgeChip Value="{ui:TagBinding Pump3_Fault}"
+                                                         ActiveText="▲ 故障" InactiveText="● 正常"
+                                                         ActiveTone="Alarm" InactiveTone="Off" />
+                            </StackPanel>
+
+                            <!-- 控制开关：支管阀门与手自模式 -->
+                            <StackPanel Canvas.Left="12" Canvas.Top="230" Orientation="Horizontal">
+                                <TextBlock Text="支阀" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Valve3]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Valve3" />
+                            </StackPanel>
+                            <StackPanel Canvas.Left="12" Canvas.Top="264" Orientation="Horizontal">
+                                <TextBlock Text="手/自" FontSize="11" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
+                                <controls:USwitchW SwitchState="{Binding ControlVm.SwitchStates[Pump3_Mode]}"
+                                                   Command="{Binding DataContext.ControlVm.ToggleCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                   CommandParameter="Pump3_Mode" />
+                            </StackPanel>
+                        </Canvas>
+                    </controls:CardView>
+
+                    <!-- ═══ 泵列管道层（y: 36..392，置顶以贯穿泵卡） ═══ -->
+                    <controls:PipeLine Canvas.Left="465" Canvas.Top="36" Width="6" Height="356"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump1Active}" />
-                    <controls:PipeLine Canvas.Left="711" Canvas.Top="36" Width="6" Height="300"
+                    <controls:PipeLine Canvas.Left="711" Canvas.Top="36" Width="6" Height="356"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump2Active}" />
-                    <controls:PipeLine Canvas.Left="957" Canvas.Top="36" Width="6" Height="300"
+                    <controls:PipeLine Canvas.Left="957" Canvas.Top="36" Width="6" Height="356"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump3Active}" />
 
                     <!-- 出口短柱 1# 2# 3# (x=468, 714, 960, y: 392→416) -->
                     <controls:PipeLine Canvas.Left="465" Canvas.Top="392" Width="6" Height="24"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump1Active}" />
                     <controls:PipeLine Canvas.Left="711" Canvas.Top="392" Width="6" Height="24"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump2Active}" />
                     <controls:PipeLine Canvas.Left="957" Canvas.Top="392" Width="6" Height="24"
                                        Orientation="Vertical" Direction="TopToBottom"
+                                       Panel.ZIndex="2"
                                        Active="{Binding IsPipePump3Active}" />
 
                     <!-- ═══ 下管廊 y=416：汇管与主管输出 ═══ -->
@@ -175,31 +373,6 @@
                             <Ellipse Width="8" Height="8" Fill="{DynamicResource Off}" VerticalAlignment="Center" Margin="0,0,4,0"/>
                             <TextBlock Text="停止/关" FontSize="10" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Border>
-
-                    <!-- 控制操作条（T4.4 将移入泵卡；此为功能过渡位） -->
-                    <Border Canvas.Left="330" Canvas.Top="340" Width="736" Height="70"
-                            Background="{DynamicResource BgHover}" CornerRadius="6" Padding="10,6" Opacity="0.95">
-                        <ItemsControl ItemsSource="{Binding ControlVm.ControlItems}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,14,4">
-                                        <TextBlock Text="{Binding Label}" FontSize="11" VerticalAlignment="Center"
-                                                   Foreground="{DynamicResource TextSecondary}" Margin="0,0,8,0" />
-                                        <controls:USwitchW VerticalAlignment="Center"
-                                                           SwitchState="{Binding State}"
-                                                           Command="{Binding DataContext.ControlVm.ToggleCommand,
-                                                                    RelativeSource={RelativeSource AncestorType=Window}}"
-                                                           CommandParameter="{Binding Tag}" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
                     </Border>
                 </Canvas>
             </controls:CardView>

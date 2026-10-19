@@ -9,6 +9,10 @@ namespace WaterSystem.Wpf.Controls
         public static readonly DependencyProperty TitleProperty = DependencyProperty.Register(
             nameof(Title), typeof(string), typeof(CardView), new PropertyMetadata(""));
 
+        public static readonly DependencyProperty BadgeProperty = DependencyProperty.Register(
+            nameof(Badge), typeof(object), typeof(CardView), new PropertyMetadata(null));
+
         public string Title { get => (string)GetValue(TitleProperty); set => SetValue(TitleProperty, value); }
+        public object? Badge { get => GetValue(BadgeProperty); set => SetValue(BadgeProperty, value); }
     }
 }

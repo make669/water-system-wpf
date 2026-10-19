@@ -8,6 +8,7 @@ namespace WaterSystem.Wpf.Tests
     /// <summary>
     /// T4.2 管道控件单测：属性初始值、方向、方向翻转守卫（B8 相位教训）。
     /// </summary>
+    [Collection("UiDispatcher")]
     public class PipeLineTests
     {
         [Fact]

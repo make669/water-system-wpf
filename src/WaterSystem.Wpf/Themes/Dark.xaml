@@ -80,9 +80,14 @@
                             </Grid.RowDefinitions>
                             <ContentPresenter Grid.Row="0" Margin="{TemplateBinding Padding}" />
                             <Border Grid.Row="1" Background="{StaticResource BgCardLabel}">
-                                <TextBlock Text="{TemplateBinding Title}" FontSize="12"
-                                           Foreground="{StaticResource TextSecondary}"
-                                           Margin="12,0,0,0" VerticalAlignment="Center" />
+                                <DockPanel Margin="12,0,12,0">
+                                    <TextBlock Text="{TemplateBinding Title}" FontSize="12"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               VerticalAlignment="Center" />
+                                    <ContentPresenter Content="{TemplateBinding Badge}"
+                                                      HorizontalAlignment="Right"
+                                                      VerticalAlignment="Center" />
+                                </DockPanel>
                             </Border>
                         </Grid>
                     </Border>

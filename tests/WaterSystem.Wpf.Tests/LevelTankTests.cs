@@ -7,6 +7,7 @@ namespace WaterSystem.Wpf.Tests
     /// <summary>
     /// T4.3 水池液位控件单测：属性初始值、Value与Level双向联动、越限报警判定、波浪动画状态。
     /// </summary>
+    [Collection("UiDispatcher")]
     public class LevelTankTests
     {
         [Fact]
