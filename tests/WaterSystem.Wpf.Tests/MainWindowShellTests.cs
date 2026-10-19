@@ -69,6 +69,10 @@ namespace WaterSystem.Wpf.Tests
                     var levelCol = grid.Columns.FirstOrDefault(c => (string)c.Header == "级别");
                     Assert.NotNull(levelCol);
                     Assert.Equal(64.0, levelCol.Width.Value);
+
+                    // T4.10 验收：顶栏包含 ⓘ 系统说明按钮
+                    var buttons = FindLogicalChildren<System.Windows.Controls.Button>(canvas).ToList();
+                    Assert.Contains(buttons, b => (string)b.Content == "ⓘ");
                     result = (true, "");
                 }
                 catch (Exception ex)

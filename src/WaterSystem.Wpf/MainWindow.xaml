@@ -54,6 +54,12 @@
                                          Tone="{Binding UnackBadgeTone}"
                                          Cursor="Hand"
                                          MouseLeftButtonUp="UnackBadge_Click" />
+                <!-- 系统说明按钮（ⓘ 图标，时钟左侧，设计书 §2.1 & T4.10） -->
+                <Button Content="ⓘ" Width="26" Height="26" HorizontalAlignment="Right"
+                        VerticalAlignment="Center" Margin="0,0,170,0" Background="Transparent"
+                        BorderThickness="0" Foreground="{DynamicResource TextSecondary}"
+                        FontSize="15" FontWeight="SemiBold" ToolTip="系统说明与陌生人指南"
+                        Click="SystemInfoButton_Click" Cursor="Hand" />
                 <TextBlock Text="{Binding ClockText}" FontSize="14"
                            Foreground="{DynamicResource TextSecondary}"
                            VerticalAlignment="Center" Margin="0,0,90,0"
