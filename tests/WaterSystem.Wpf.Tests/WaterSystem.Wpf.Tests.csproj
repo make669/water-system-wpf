@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\WaterSystem.Wpf\WaterSystem.Wpf.csproj" />
+    <ProjectReference Include="..\..\src\WaterSystem.Core\WaterSystem.Core.csproj" />
   </ItemGroup>
 
 </Project>
