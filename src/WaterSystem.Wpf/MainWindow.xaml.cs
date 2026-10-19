@@ -80,12 +80,21 @@ namespace WaterSystem.Wpf
         private void LogGrid_LoadingRow(object sender, DataGridRowEventArgs e)
             => Services.LogRowStyler.Apply(e.Row, (LogEntry)e.Row.Item);
 
+        /// <summary>是否在窗口关闭时弹窗确认（修 P14，默认 true；单测可设为 false 避免阻塞）。</summary>
+        public bool ConfirmOnClose { get; set; } = true;
+
         /// <summary>
-        /// 关闭生命周期（对应 FormClosing，FrmMain.cs:185-201）：停轮询/停模拟/存状态。
+        /// 关闭生命周期（对应 FormClosing，FrmMain.cs:185-201）：弹退出确认（修 P14）→ 停轮询/停模拟/存状态。
         /// 轮询释放与状态持久化在 App.OnExit（M8 接线），此处记录会话结束。
         /// </summary>
         protected override void OnClosing(CancelEventArgs e)
         {
+            if (ConfirmOnClose && !ViewModels.ConfirmDialog.ConfirmExit(this))
+            {
+                e.Cancel = true;
+                return;
+            }
+
             App.Log?.Info("会话结束：停止数据采集");
             App.SaveSession();   // M8：开关语义 + 通信参数（显示值不存）
             base.OnClosing(e);
