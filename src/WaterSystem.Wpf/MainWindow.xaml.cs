@@ -74,6 +74,13 @@ namespace WaterSystem.Wpf
 
         private void OpenLogViewer_Click(object sender, RoutedEventArgs e) => OpenLogViewer();
 
+        /// <summary>顶栏 ⓘ 系统说明窗（设计书 §1.0 & §2.1，T4.10 验收）。</summary>
+        private void SystemInfoButton_Click(object sender, RoutedEventArgs e)
+        {
+            var infoWin = new Views.SystemInfoWindow(DataContext as ViewModels.MainViewModel) { Owner = this };
+            infoWin.ShowDialog();
+        }
+
         private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
         /// <summary>日志行着色（唯一出处：LogRowStyler，主卡与 F12 共用——T6.1）。</summary>
