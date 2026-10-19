@@ -67,8 +67,13 @@ namespace WaterSystem.Wpf.ViewModels
         public ViewModels.AlarmPanelViewModel? AlarmPanel { get; }
 
         /// <summary>水位阈值（AlarmConfig，趋势卡红线数据源，修 P10）。</summary>
+        /// <summary>水位与压力阈值（AlarmConfig，修 P4/P10）。</summary>
         public double ThresholdLow { get; }
         public double ThresholdHigh { get; }
+        public double ThresholdPressureMax { get; }
+
+        /// <summary>主管压力超限判定（P4 关闭：过程图描红数据源）。</summary>
+        public bool IsHighPressure => TagValues["MainOutPressure"] > ThresholdPressureMax;
 
         /// <summary>Y 轴上限（TagTable CurWaterPos 量程上限 ×1.0833）。</summary>
         public double YMax { get; }
@@ -89,6 +94,23 @@ namespace WaterSystem.Wpf.ViewModels
             get => _hasUnack;
             private set { _hasUnack = value; PropertyChanged?.Invoke(this, new(nameof(HasUnack))); }
         }
+
+        private int _unackCount;
+        public int UnackCount
+        {
+            get => _unackCount;
+            private set
+            {
+                if (_unackCount == value) return;
+                _unackCount = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UnackCount)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UnackBadgeText)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UnackBadgeTone)));
+            }
+        }
+
+        public string UnackBadgeText => UnackCount > 0 ? $"⚠ 未确认 {UnackCount}" : "● 正常";
+        public Controls.AlarmBadgeTone UnackBadgeTone => UnackCount > 0 ? Controls.AlarmBadgeTone.Alarm : Controls.AlarmBadgeTone.Off;
 
         #region 通知属性
 
@@ -175,6 +197,7 @@ namespace WaterSystem.Wpf.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump1Active)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump2Active)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPipePump3Active)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHighPressure)));
         }
 
         #endregion
@@ -215,8 +238,12 @@ namespace WaterSystem.Wpf.ViewModels
             {
                 AlarmPanel = new AlarmPanelViewModel(alarmCenter);
                 alarmCenter.OnAlarmChanged += _ => UiDispatcher.Post(() =>
-                    HasUnack = alarmCenter.UnacknowledgedCount > 0);
-                HasUnack = alarmCenter.UnacknowledgedCount > 0;
+                {
+                    UnackCount = alarmCenter.UnacknowledgedCount;
+                    HasUnack = UnackCount > 0;
+                });
+                UnackCount = alarmCenter.UnacknowledgedCount;
+                HasUnack = UnackCount > 0;
             }
 
             // 顶栏时钟（1s）
@@ -224,9 +251,10 @@ namespace WaterSystem.Wpf.ViewModels
             clockTimer.Tick += (_, _) => ClockText = _clock().ToString("HH:mm:ss");
             clockTimer.Start();
 
-            // 趋势阈值（修 P10：数据源=AlarmConfig + TagTable 量程）
+            // 趋势与报警阈值（修 P4/P10：数据源=AlarmConfig + TagTable 量程）
             ThresholdLow = config?.WaterLevelLow ?? 1.0;
             ThresholdHigh = config?.WaterLevelHigh ?? 6.0;
+            ThresholdPressureMax = config?.MaxPressure ?? 10.0;
             var water = tags.FirstOrDefault(t => t.TagName.Equals("CurWaterPos", StringComparison.OrdinalIgnoreCase));
             YMax = Math.Round((water?.MaxValue ?? 6.0) * 1.0833, 2);   // 量程上限 + 8% 余量
 

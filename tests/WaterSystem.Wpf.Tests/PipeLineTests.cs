@@ -35,5 +35,22 @@ namespace WaterSystem.Wpf.Tests
             t.Start();
             Assert.True(t.Join(5000), "STA 测试执行超时");
         }
+
+        [Fact]
+        public void PipeLine_Alarm属性响应()
+        {
+            var t = new Thread(() =>
+            {
+                var pipe = new PipeLine();
+                Assert.False(pipe.Alarm);
+                pipe.Alarm = true;
+                Assert.True(pipe.Alarm);
+                pipe.Alarm = false;
+                Assert.False(pipe.Alarm);
+            });
+            t.SetApartmentState(ApartmentState.STA);
+            t.Start();
+            Assert.True(t.Join(5000), "STA 测试执行超时");
+        }
     }
 }

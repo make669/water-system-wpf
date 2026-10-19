@@ -43,6 +43,10 @@ namespace WaterSystem.Wpf.Controls
             nameof(PipeThickness), typeof(double), typeof(PipeLine),
             new PropertyMetadata(6.0, OnVisualLayoutChanged));
 
+        public static readonly DependencyProperty AlarmProperty = DependencyProperty.Register(
+            nameof(Alarm), typeof(bool), typeof(PipeLine),
+            new PropertyMetadata(false, OnAlarmChanged));
+
         private readonly Canvas _canvas = new();
         private readonly Line _baseLine = new();
         private readonly Line _flowLine = new();
@@ -53,6 +57,7 @@ namespace WaterSystem.Wpf.Controls
         public Orientation Orientation { get => (Orientation)GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
         public double FlowSpeed { get => (double)GetValue(FlowSpeedProperty); set => SetValue(FlowSpeedProperty, value); }
         public double PipeThickness { get => (double)GetValue(PipeThicknessProperty); set => SetValue(PipeThicknessProperty, value); }
+        public bool Alarm { get => (bool)GetValue(AlarmProperty); set => SetValue(AlarmProperty, value); }
 
         public PipeLine()
         {
@@ -87,12 +92,24 @@ namespace WaterSystem.Wpf.Controls
                 pipe.StopFlowAnimation();
         }
 
+        private static void OnAlarmChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var pipe = (PipeLine)d;
+            pipe.UpdateBrushes();
+        }
+
         private static void OnVisualLayoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var pipe = (PipeLine)d;
             pipe.UpdateGeometry();
             if (pipe.Active)
                 pipe.StartFlowAnimation();
+        }
+
+        private void UpdateBrushes()
+        {
+            _baseLine.Stroke = ResourceBrush(Alarm ? "Alarm" : "PipeIdle", Alarm ? "#F87171" : "#3D4E6B");
+            _flowLine.Stroke = ResourceBrush(Alarm ? "Alarm" : "PipeRun", Alarm ? "#F87171" : "#3FB950");
         }
 
         private void UpdateGeometry()
@@ -103,8 +120,7 @@ namespace WaterSystem.Wpf.Controls
 
             _baseLine.StrokeThickness = PipeThickness;
             _flowLine.StrokeThickness = PipeThickness;
-            _baseLine.Stroke = ResourceBrush("PipeIdle", "#3D4E6B");
-            _flowLine.Stroke = ResourceBrush("PipeRun", "#3FB950");
+            UpdateBrushes();
 
             if (Orientation == Orientation.Horizontal)
             {

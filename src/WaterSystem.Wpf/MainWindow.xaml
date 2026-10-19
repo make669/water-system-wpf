@@ -48,21 +48,12 @@
                     <TextBlock Text="{Binding ConnStateText}" FontSize="12"
                                Foreground="{DynamicResource TextSecondary}" />
                 </StackPanel>
-                <!-- 未确认报警徽标（P12：AlarmCenter 计数上顶栏） -->
-                <TextBlock VerticalAlignment="Center" Margin="700,0,0,0" FontSize="12" FontWeight="SemiBold">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{DynamicResource Off}" />
-                            <Setter Property="Text" Value="报警 0" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding HasUnack}" Value="True">
-                                    <Setter Property="Foreground" Value="{DynamicResource Alarm}" />
-                                    <Setter Property="Text" Value="⚠ 未确认报警" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
+                <!-- 未确认报警徽标（P4/P12：AlarmCenter 计数上顶栏，点击聚焦报警卡） -->
+                <controls:AlarmBadgeChip VerticalAlignment="Center" Margin="680,0,0,0"
+                                         Text="{Binding UnackBadgeText}"
+                                         Tone="{Binding UnackBadgeTone}"
+                                         Cursor="Hand"
+                                         MouseLeftButtonUp="UnackBadge_Click" />
                 <TextBlock Text="{Binding ClockText}" FontSize="14"
                            Foreground="{DynamicResource TextSecondary}"
                            VerticalAlignment="Center" Margin="0,0,90,0"
@@ -84,9 +75,12 @@
                                         LowAt="{Binding ThresholdLow}"
                                         HighAt="{Binding ThresholdHigh}" />
                     <controls:ParaBox Canvas.Left="16" Canvas.Top="184" Title="水位" Unit="m" Decimals="1"
-                                      Value="{ui:TagBinding CurWaterPos}" />
+                                      Value="{ui:TagBinding CurWaterPos}"
+                                      LowThreshold="{Binding ThresholdLow}"
+                                      HighThreshold="{Binding ThresholdHigh}" />
                     <controls:ParaBox Canvas.Left="16" Canvas.Top="224" Title="主管压力" Unit="MPa" Decimals="2"
-                                      Value="{ui:TagBinding MainOutPressure}" />
+                                      Value="{ui:TagBinding MainOutPressure}"
+                                      HighThreshold="{Binding ThresholdPressureMax}" />
                     <controls:ParaBox Canvas.Left="16" Canvas.Top="264" Title="主管流量" Unit="m³" Decimals="1"
                                       Value="{ui:TagBinding MainOutFlow}" />
                     <StackPanel Canvas.Left="16" Canvas.Top="312" Orientation="Horizontal">
@@ -102,7 +96,8 @@
                                Foreground="{DynamicResource TextSecondary}" />
                     <controls:PipeLine Canvas.Left="226" Canvas.Top="13" Width="824" Height="6"
                                        Orientation="Horizontal" Direction="LeftToRight"
-                                       Active="{Binding IsPipeMainActive}" />
+                                       Active="{Binding IsPipeMainActive}"
+                                       Alarm="{Binding IsHighPressure}" />
                     <!-- 总阀门阀体示意（x=300，P&ID 双三角阀门符号） -->
                     <Path Canvas.Left="292" Canvas.Top="10" Data="M0,0 L16,12 L16,0 L0,12 Z"
                           Stroke="{DynamicResource Stroke}" StrokeThickness="1">
@@ -461,7 +456,9 @@
             </controls:CardView>
 
             <!-- ═══ 实时报警卡 (1102,52,384,330)——修 P4/P12 ═══ -->
-            <controls:CardView Canvas.Left="1102" Canvas.Top="52" Width="384" Height="330" Title="实时报警">
+            <controls:CardView x:Name="AlarmCard" Canvas.Left="1102" Canvas.Top="52" Width="384" Height="330" Title="实时报警"
+                               Focusable="True"
+                               Badge="{Binding AlarmPanel.UnackBadgeText}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -477,6 +474,7 @@
                     </DockPanel>
                     <ListBox Grid.Row="1" ItemsSource="{Binding AlarmPanel.Rows}"
                              SelectedItem="{Binding AlarmPanel.Selected}"
+                             MouseDoubleClick="AlarmListBox_MouseDoubleClick"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
