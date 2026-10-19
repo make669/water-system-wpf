@@ -41,6 +41,7 @@ namespace WaterSystem.Wpf.Controls
             ClipToBounds = true;
             Content = _canvas;
             SizeChanged += (_, _) => Redraw();
+            Redraw();
         }
 
         private static void OnLayoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -69,12 +70,23 @@ namespace WaterSystem.Wpf.Controls
         private void Redraw()
         {
             _canvas.Children.Clear();
-            double w = ActualWidth, h = ActualHeight;
+            double w = ActualWidth > 0 ? ActualWidth : (Width > 0 ? Width : 724);
+            double h = ActualHeight > 0 ? ActualHeight : (Height > 0 ? Height : 150);
             if (w < 60 || h < 30) return;
 
             const double left = 42, top = 8;
             double plotW = w - left - 10, plotH = h - top - 22;
             double yMax = YMax;
+
+            // Y 轴单位 "m"（修 P10）
+            var unitBlock = new TextBlock
+            {
+                Text = "m", FontSize = 10, FontWeight = FontWeights.SemiBold,
+                Foreground = B("TextSecondary"),
+            };
+            Canvas.SetLeft(unitBlock, left - 24);
+            Canvas.SetTop(unitBlock, top - 8);
+            _canvas.Children.Add(unitBlock);
 
             // 网格 + Y 刻度（0..yMax，4 条虚线）
             for (int i = 0; i <= 3; i++)
@@ -94,7 +106,7 @@ namespace WaterSystem.Wpf.Controls
                 }.Also(tb => { Canvas.SetLeft(tb, left - 26); Canvas.SetTop(tb, y - 7); }));
             }
 
-            // 阈值线（红虚线 + 标注）
+            // 阈值线（红虚线 + 标注，修 P10）
             DrawThreshold(top, plotH, ThresholdHigh, "上限");
             DrawThreshold(top, plotH, ThresholdLow, "下限");
 
@@ -118,12 +130,12 @@ namespace WaterSystem.Wpf.Controls
                 _canvas.Children.Add(empty);
             }
 
-            // 图例
+            // 图例（修 P10：图例"水位"）
             var legend = new TextBlock
             {
-                Text = "● 水位 CurWaterPos（m）", FontSize = 10, Foreground = B("TextSecondary"),
+                Text = "● 水位", FontSize = 11, FontWeight = FontWeights.SemiBold, Foreground = B("TextSecondary"),
             };
-            Canvas.SetLeft(legend, left + 4);
+            Canvas.SetLeft(legend, left + 8);
             Canvas.SetTop(legend, top + 2);
             _canvas.Children.Add(legend);
         }
@@ -137,8 +149,8 @@ namespace WaterSystem.Wpf.Controls
                 X1 = 42, Y1 = y, X2 = 42 + ActualWidth - 52, Y2 = y,
                 Stroke = B("Alarm"), StrokeThickness = 1, StrokeDashArray = new DoubleCollection { 4, 4 },
             });
-            var t = new TextBlock { Text = $"{label} {value:0.#}", FontSize = 9, Foreground = B("Alarm") };
-            Canvas.SetLeft(t, ActualWidth - 44);
+            var t = new TextBlock { Text = $"{label} {value:0.#}m", FontSize = 9, Foreground = B("Alarm") };
+            Canvas.SetLeft(t, ActualWidth - 56);
             Canvas.SetTop(t, y - 8);
             _canvas.Children.Add(t);
         }
